@@ -88,7 +88,7 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 .btn[disabled]{opacity:.4;cursor:not-allowed}
 
 .eyebrow{display:inline-flex;align-items:center;gap:.45rem;font-size:.66rem;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--txt-3);padding:.34rem .7rem;border-radius:999px;background:var(--surface);border:1px solid var(--hairline)}
-.eyebrow b{color:var(--accent);font-weight:700}
+.eyebrow b{color:var(--accent);font-weight:700;margin:0 .1em}
 
 /* card (double-bezel) */
 .card{position:relative;border-radius:var(--radius);padding:.6rem;background:var(--shell);border:1px solid var(--hairline);box-shadow:0 1px 0 rgba(255,255,255,.05) inset,0 30px 70px -50px rgba(0,0,0,.9)}
@@ -111,22 +111,23 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 @media(max-width:880px){.bento>*{grid-column:span 12 !important;grid-row:auto !important}.b-kpis{grid-template-rows:repeat(3,1fr)}}
 
 /* kpi */
-.kpi{border-radius:calc(var(--radius) - .6rem);padding:1.15rem 1.25rem;background:var(--surface);border:1px solid var(--hairline);display:flex;flex-direction:column;justify-content:center;gap:.4rem}
+.kpi{border-radius:calc(var(--radius) - .6rem);padding:1.15rem 1.25rem;background:var(--surface);border:1px solid var(--hairline);display:flex;flex-direction:column;justify-content:center;gap:.55rem}
 .kpi__label{font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--txt-3);font-weight:600}
 .kpi__val{font-family:var(--f-mono);font-size:1.7rem;font-weight:600;letter-spacing:-0.02em;color:var(--txt)}
 .kpi__sub{font-size:.74rem;color:var(--txt-2);font-weight:500}
 .kpi--accent .kpi__val{color:var(--accent)}
+.kpi--accent2 .kpi__val{color:var(--gold)}
 .kpi--warn .kpi__val{color:var(--warn)}
 .kpi__sub.ars{color:var(--ars)}                /* pesos argentinos en celeste bandera */
 .ars{color:var(--ars)}
 
 /* progress */
 .prog{display:flex;flex-direction:column;gap:1.8rem;height:100%}
-.prog__big{font-family:var(--f-mono);font-weight:500;line-height:1;letter-spacing:-0.03em;font-size:clamp(2.6rem,7vw,4.4rem);color:var(--txt)}
-.prog__big .cur{color:var(--txt-2);font-size:.42em;font-weight:500;vertical-align:.6em;margin-right:.45em;letter-spacing:.04em}
-.prog__big .pct{color:var(--accent);font-size:.34em;font-weight:600;margin-left:.5em;vertical-align:.85em}
+.prog__big{font-family:var(--f-mono);font-weight:500;line-height:1;letter-spacing:-0.03em;font-size:clamp(2.6rem,7vw,4.4rem);color:var(--accent)}
+.prog__big .cur{color:var(--txt-2);font-size:.42em;font-weight:500;vertical-align:.6em;margin-right:.6em;letter-spacing:.04em}
+.prog__big .pct{color:var(--accent);font-size:.34em;font-weight:600;margin-left:.65em;vertical-align:.85em}
 .prog__of{font-size:.8rem;color:var(--txt-3);font-weight:500;margin-top:.4rem}
-.prog__of b{color:var(--txt-2);font-family:var(--f-mono);font-weight:500}
+.prog__of b{color:var(--accent);font-family:var(--f-mono);font-weight:600;margin-left:.15em}
 .track{position:relative;height:14px;border-radius:999px;background:rgba(255,255,255,.05);overflow:hidden;border:1px solid var(--hairline)}
 .track__fill{position:absolute;inset:0 auto 0 0;border-radius:999px;width:0%;background:linear-gradient(90deg,var(--accent-2),var(--accent));box-shadow:0 0 0 1px rgba(255,255,255,.18) inset,0 0 24px var(--accent-glow);transition:width 1.1s var(--ease-out)}
 .track__rest{position:absolute;inset:0 auto 0 0;border-radius:999px;width:0%;background:repeating-linear-gradient(90deg,rgba(251,113,133,.5) 0 7px,transparent 7px 13px);transition:width 1.1s var(--ease-out)}
@@ -134,10 +135,9 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 .legend{display:flex;align-items:center;gap:.5rem;font-size:.74rem;color:var(--txt-2);font-weight:500}
 .legend i{width:10px;height:10px;border-radius:3px}
 .legend .l-done{background:var(--accent)}.legend .l-rest{background:var(--warn)}
-.legend b{color:var(--txt);font-family:var(--f-mono);font-weight:600}
+.legend b{color:var(--txt);font-family:var(--f-mono);font-weight:600;margin-left:.25em}
 .prog__ticks{display:flex;justify-content:space-between;margin-top:.1rem}
 .prog__ticks span{font-family:var(--f-mono);font-size:.64rem;color:var(--txt-3)}
-
 /* config / fields */
 .field{display:flex;flex-direction:column;gap:.45rem}
 .field label{font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--txt-3);font-weight:600}
@@ -331,7 +331,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260824.2022</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260824.2056</span>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
         <svg class="ico-moon" viewBox="0 0 24 24" style="display:none"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
         <svg class="ico-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8 6 18M18 6l1.8-1.8"/></svg>
@@ -359,7 +359,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     <!-- kpis -->
     <article class="card b-kpis reveal"><div class="card__inner" style="gap:clamp(.7rem,1.6vw,1.1rem)">
       <div class="kpi kpi--accent"><span class="kpi__label">Total Objetivo</span><span class="kpi__val" id="kpiObj">u$s 0</span><span class="kpi__sub ars" id="kpiObjArs">$ 0 · ARS</span></div>
-      <div class="kpi"><span class="kpi__label">Nº de Depósitos</span><span class="kpi__val" id="kpiNum">0</span><span class="kpi__sub">niveles del desafío</span></div>
+      <div class="kpi kpi--accent2"><span class="kpi__label">Nº de Depósitos</span><span class="kpi__val" id="kpiNum">0</span><span class="kpi__sub">niveles del desafío</span></div>
       <div class="kpi kpi--warn"><span class="kpi__label">Restante</span><span class="kpi__val" id="kpiRest">u$s 0</span><span class="kpi__sub ars" id="kpiRestArs">$ 0 · ARS</span></div>
     </div></article>
 
@@ -531,7 +531,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260824.2022";
+const APP_VERSION = "v.260824.2056";
 
 const state = {
   objetivo: 100000,
