@@ -32,6 +32,7 @@
   --ledger-head-bg:#0d0f12;
   --ledger-bg:rgba(0,0,0,.22);
   --ledger-row-hover:rgba(255,255,255,.03);
+  --inset-bg:rgba(0,0,0,.30);        /* paneles internos (inputs, FX, totales) — oscuro en dark */
 }
 /* tema claro (light) */
 [data-theme="light"]{
@@ -40,7 +41,7 @@
   --shell:rgba(0,0,0,.04); --hairline:rgba(0,0,0,.10); --hairline-2:rgba(0,0,0,.18);
   --txt:#0e1116; --txt-2:rgba(14,17,22,.62); --txt-3:rgba(14,17,22,.45);
   --accent:#059669; --accent-2:#047857; --accent-glow:rgba(5,150,105,.35);
-  --warn:#e11d48; --gold:#ca8a04; --plan:#dbeafe;
+  --warn:#e11d48; --gold:#ca8a04; --plan:#1f3864;
   --ars:#2f7fc4;            /* celeste bandera argentina (más oscuro para contraste en light) */
   --nav-bg:rgba(255,255,255,.72);
   --nav-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 18px 50px -28px rgba(0,0,0,.18);
@@ -49,6 +50,7 @@
   --ledger-head-bg:#e8ebef;
   --ledger-bg:rgba(0,0,0,.03);
   --ledger-row-hover:rgba(0,0,0,.03);
+  --inset-bg:rgba(0,0,0,.04);        /* paneles internos — muy claro en light */
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
@@ -138,7 +140,7 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 /* config / fields */
 .field{display:flex;flex-direction:column;gap:.45rem}
 .field label{font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--txt-3);font-weight:600}
-.input{font-family:var(--f-mono);font-size:1.1rem;font-weight:600;color:var(--txt);background:rgba(0,0,0,.32);border:1px solid var(--hairline);border-radius:1rem;padding:.85rem 1rem;width:100%;outline:none;letter-spacing:-0.01em;transition:border-color .35s var(--ease),box-shadow .35s var(--ease);-moz-appearance:textfield}
+.input{font-family:var(--f-mono);font-size:1.1rem;font-weight:600;color:var(--txt);background:var(--inset-bg);border:1px solid var(--hairline);border-radius:1rem;padding:.85rem 1rem;width:100%;outline:none;letter-spacing:-0.01em;transition:border-color .35s var(--ease),box-shadow .35s var(--ease);-moz-appearance:textfield}
 .input::-webkit-outer-spin-button,.input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(52,211,153,.16)}
 .input__wrap{position:relative;display:flex;align-items:center}
@@ -153,7 +155,7 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 .fx__rate{display:flex;flex-direction:column;gap:.5rem}
 .fx__rate .input{max-width:18rem}
 .fx__grid{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
-.fx__col{border-radius:1.1rem;padding:1.1rem 1.15rem;background:rgba(0,0,0,.28);border:1px solid var(--hairline);display:flex;flex-direction:column;gap:.5rem}
+.fx__col{border-radius:1.1rem;padding:1.1rem 1.15rem;background:var(--inset-bg);border:1px solid var(--hairline);display:flex;flex-direction:column;gap:.5rem}
 .fx__col h4{font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;font-weight:600;display:flex;align-items:center;gap:.4rem}
 .fx__col h4 i{width:8px;height:8px;border-radius:50%}
 .fx__col.pend h4 i{background:var(--warn)}.fx__col.paid h4 i{background:var(--accent)}
@@ -219,7 +221,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
 .ledger__t .c-ars{color:var(--ars)}            /* columnas de pesos en celeste bandera */
 .ledger__t tr.plan td{background:var(--plan);color:#fff;font-weight:600;text-align:center;letter-spacing:.02em;font-size:.74rem}
 .ledger__empty{padding:2rem;text-align:center;color:var(--txt-3);font-size:.86rem}
-.ledger__foot{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;padding:.8rem 1rem;border-top:1px solid var(--hairline);background:rgba(0,0,0,.2)}
+.ledger__foot{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;padding:.8rem 1rem;border-top:1px solid var(--hairline);background:var(--inset-bg)}
 .ledger__foot .meta{font-family:var(--f-mono);font-size:.74rem;color:var(--txt-3)}
 .ledger__foot .meta b{color:var(--txt-2)}
 
@@ -233,7 +235,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
 .modal__sub{font-size:.74rem;color:var(--txt-3);margin-top:.2rem;font-weight:500}
 .modal__body{display:flex;flex-direction:column;gap:1rem;overflow:auto;min-height:0}
 .modal__totals{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
-.mtot{border-radius:1rem;padding:.85rem .95rem;background:rgba(0,0,0,.28);border:1px solid var(--hairline);display:flex;flex-direction:column;gap:.3rem}
+.mtot{border-radius:1rem;padding:.85rem .95rem;background:var(--inset-bg);border:1px solid var(--hairline);display:flex;flex-direction:column;gap:.3rem}
 .mtot h5{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;font-weight:600;display:flex;align-items:center;gap:.35rem;color:var(--txt-3)}
 .mtot h5 i{width:7px;height:7px;border-radius:50%}
 .mtot.pend h5 i{background:var(--warn)}.mtot.tild h5 i{background:var(--accent)}
@@ -304,7 +306,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260824.1953</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260824.2001</span>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
         <svg class="ico-moon" viewBox="0 0 24 24" style="display:none"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
         <svg class="ico-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8 6 18M18 6l1.8-1.8"/></svg>
@@ -480,7 +482,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260824.1953";
+const APP_VERSION = "v.260824.2001";
 
 const state = {
   objetivo: 100000,
