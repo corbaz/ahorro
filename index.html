@@ -20,6 +20,7 @@
   --txt:#f4f5f7; --txt-2:rgba(244,245,247,.62); --txt-3:rgba(244,245,247,.38);
   --accent:#34d399; --accent-2:#10b981; --accent-glow:rgba(52,211,153,.45);
   --warn:#fb7185; --gold:#eab308; --plan:#1f3864;
+  --ars:#75AADB;            /* celeste bandera argentina — montos en pesos */
   --radius:2rem; --radius-sm:1.25rem;
   --ease:cubic-bezier(0.32,0.72,0,1); --ease-out:cubic-bezier(0.16,1,0.3,1);
   --f-display:"Plus Jakarta Sans",ui-sans-serif,system-ui,sans-serif;
@@ -33,7 +34,7 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 .wrap{max-width:1240px;margin:0 auto;padding:clamp(1rem,3vw,2.5rem) clamp(1rem,4vw,2.5rem) 8rem}
 
 /* nav (fluid island) */
-.nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:1rem;margin:0 auto 2.5rem;max-width:62rem;padding:.5rem .5rem .5rem 1.25rem;background:rgba(10,11,13,.62);backdrop-filter:blur(22px) saturate(140%);-webkit-backdrop-filter:blur(22px) saturate(140%);border:1px solid var(--hairline);border-radius:999px;box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 18px 50px -28px rgba(0,0,0,.9)}
+.nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:1rem;margin:0 auto 2.5rem;max-width:1240px;width:100%;padding:.55rem 1.1rem;background:rgba(10,11,13,.62);backdrop-filter:blur(22px) saturate(140%);-webkit-backdrop-filter:blur(22px) saturate(140%);border:1px solid var(--hairline);border-radius:1.4rem;box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 18px 50px -28px rgba(0,0,0,.9)}
 .nav__brand{display:flex;align-items:center;gap:.7rem;min-width:0}
 .nav__logo{width:34px;height:34px;border-radius:12px;flex:none;display:grid;place-items:center;background:linear-gradient(150deg,var(--accent),var(--accent-2));box-shadow:0 0 0 1px rgba(255,255,255,.16) inset,0 8px 24px -8px var(--accent-glow)}
 .nav__logo svg{width:18px;height:18px;stroke:#050506;stroke-width:1.6;fill:none}
@@ -88,11 +89,13 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 .kpi__sub{font-size:.74rem;color:var(--txt-2);font-weight:500}
 .kpi--accent .kpi__val{color:var(--accent)}
 .kpi--warn .kpi__val{color:var(--warn)}
+.kpi__sub.ars{color:var(--ars)}                /* pesos argentinos en celeste bandera */
+.ars{color:var(--ars)}
 
 /* progress */
 .prog{display:flex;flex-direction:column;gap:1.8rem;height:100%}
 .prog__big{font-family:var(--f-mono);font-weight:500;line-height:1;letter-spacing:-0.03em;font-size:clamp(2.6rem,7vw,4.4rem);color:var(--txt)}
-.prog__big .cur{color:var(--txt-2);font-size:.42em;font-weight:500;vertical-align:.6em;margin-right:.2em;letter-spacing:.04em}
+.prog__big .cur{color:var(--txt-2);font-size:.42em;font-weight:500;vertical-align:.6em;margin-right:.45em;letter-spacing:.04em}
 .prog__big .pct{color:var(--accent);font-size:.34em;font-weight:600;margin-left:.5em;vertical-align:.85em}
 .prog__of{font-size:.8rem;color:var(--txt-3);font-weight:500;margin-top:.4rem}
 .prog__of b{color:var(--txt-2);font-family:var(--f-mono);font-weight:500}
@@ -130,7 +133,7 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 .fx__col h4 i{width:8px;height:8px;border-radius:50%}
 .fx__col.pend h4 i{background:var(--warn)}.fx__col.paid h4 i{background:var(--accent)}
 .fx__val{font-family:var(--f-mono);font-size:1.4rem;font-weight:600;letter-spacing:-0.02em}
-.fx__ars{font-family:var(--f-mono);font-size:.9rem;color:var(--txt-2);font-weight:500}
+.fx__ars{font-family:var(--f-mono);font-size:.9rem;color:var(--ars);font-weight:500}
 .fx__col.pend .fx__val{color:var(--warn)}.fx__col.paid .fx__val{color:var(--accent)}
 
 /* cuota grid (view-only) */
@@ -146,9 +149,9 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 .cuota:hover{transform:translateY(-2px);border-color:var(--hairline-2)}
 .cuota__top{display:flex;align-items:center;justify-content:space-between}
 .cuota__n{font-family:var(--f-mono);font-size:.74rem;color:var(--txt-3);font-weight:600;letter-spacing:.04em}
-.cuota__lvl{font-size:.6rem;color:var(--txt-3);font-weight:600;letter-spacing:.12em;text-transform:uppercase}
+.cuota__lvl{font-size:.56rem;color:var(--txt-3);font-weight:700;letter-spacing:.16em;text-transform:uppercase;padding:.2rem .5rem;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--hairline)}
 .cuota__amt{font-family:var(--f-mono);font-size:1.2rem;font-weight:600;letter-spacing:-0.02em;color:var(--txt)}
-.cuota__amt small{font-size:.58em;color:var(--txt-3);font-weight:500;margin-left:.25em}
+.cuota__amt small{font-size:.52em;color:var(--txt-3);font-weight:500;margin-left:.7em}
 .cuota__check{position:absolute;top:.8rem;right:.8rem;width:1.4rem;height:1.4rem;border-radius:50%;border:1px solid var(--hairline-2);display:grid;place-items:center;flex:none;transition:all .35s var(--ease)}
 .cuota__check svg{width:.85rem;height:.85rem;stroke:#04110b;stroke-width:2.4;fill:none;opacity:0;transform:scale(.5);transition:all .35s var(--ease)}
 .cuota.is-paid{background:linear-gradient(160deg,rgba(52,211,153,.10),rgba(52,211,153,.02));border-color:rgba(52,211,153,.32)}
@@ -170,6 +173,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
 .ledger__t .c-date{color:var(--txt-2);text-align:left}
 .ledger__t .c-rest{color:var(--warn)}
 .ledger__t .c-acum{color:var(--accent)}
+.ledger__t .c-ars{color:var(--ars)}            /* columnas de pesos en celeste bandera */
 .ledger__t tr.plan td{background:var(--plan);color:#fff;font-weight:600;text-align:center;letter-spacing:.02em;font-size:.74rem}
 .ledger__empty{padding:2rem;text-align:center;color:var(--txt-3);font-size:.86rem}
 .ledger__foot{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;padding:.8rem 1rem;border-top:1px solid var(--hairline);background:rgba(0,0,0,.2)}
@@ -192,7 +196,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
 .mtot.pend h5 i{background:var(--warn)}.mtot.tild h5 i{background:var(--accent)}
 .mtot__usd{font-family:var(--f-mono);font-size:1.15rem;font-weight:600}
 .mtot.pend .mtot__usd{color:var(--warn)}.mtot.tild .mtot__usd{color:var(--accent)}
-.mtot__ars{font-family:var(--f-mono);font-size:.78rem;color:var(--txt-2)}
+.mtot__ars{font-family:var(--f-mono);font-size:.78rem;color:var(--ars)}
 .modal__rate{display:flex;flex-direction:column;gap:.4rem}
 .checklist{display:flex;flex-direction:column;gap:.4rem;max-height:16rem;overflow:auto;padding-right:.2rem;scrollbar-width:thin;scrollbar-color:var(--hairline-2) transparent}
 .checklist::-webkit-scrollbar{width:8px}.checklist::-webkit-scrollbar-thumb{background:var(--hairline-2);border-radius:999px}
@@ -253,7 +257,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260824.1708</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260824.1727</span>
       <button class="btn btn--icon btn--ghost" id="btnBackup" title="Guardar respaldo"><svg viewBox="0 0 24 24"><path d="M4 7a2 2 0 0 1 2-2h2l1.5-2h5L16 5h2a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M9 13a3 3 0 0 0 6 0 3 3 0 1 0-6 0"/></svg></button>
     </div>
   </nav>
@@ -276,9 +280,9 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
 
     <!-- kpis -->
     <article class="card b-kpis reveal"><div class="card__inner" style="gap:clamp(.7rem,1.6vw,1.1rem)">
-      <div class="kpi kpi--accent"><span class="kpi__label">Total Objetivo</span><span class="kpi__val" id="kpiObj">u$s 0</span><span class="kpi__sub" id="kpiObjArs">$ 0 · ARS</span></div>
+      <div class="kpi kpi--accent"><span class="kpi__label">Total Objetivo</span><span class="kpi__val" id="kpiObj">u$s 0</span><span class="kpi__sub ars" id="kpiObjArs">$ 0 · ARS</span></div>
       <div class="kpi"><span class="kpi__label">Nº de Depósitos</span><span class="kpi__val" id="kpiNum">0</span><span class="kpi__sub">niveles del desafío</span></div>
-      <div class="kpi kpi--warn"><span class="kpi__label">Restante</span><span class="kpi__val" id="kpiRest">u$s 0</span><span class="kpi__sub" id="kpiRestArs">$ 0 · ARS</span></div>
+      <div class="kpi kpi--warn"><span class="kpi__label">Restante</span><span class="kpi__val" id="kpiRest">u$s 0</span><span class="kpi__sub ars" id="kpiRestArs">$ 0 · ARS</span></div>
     </div></article>
 
     <!-- config (Resetear) -->
@@ -402,7 +406,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260824.1708";
+const APP_VERSION = "v.260824.1727";
 
 const state = {
   objetivo: 100000,
@@ -569,9 +573,9 @@ function renderHistorial(){
     return `<tr>
       <td class="c-date">${fmtDate(r.fecha)}</td>
       <td>${r.n}</td><td>${fmtNum(r.rate)}</td>
-      <td>${fmtUsd(r.montoUsd)}</td><td>$ ${fmtNum(r.montoArs)}</td>
+      <td>${fmtUsd(r.montoUsd)}</td><td class="c-ars">$ ${fmtNum(r.montoArs)}</td>
       <td class="c-rest">${fmtUsd(r.restUsd)}</td><td class="c-acum">${fmtUsd(r.acumUsd)}</td>
-      <td class="c-rest">$ ${fmtNum(r.restArs)}</td><td class="c-acum">$ ${fmtNum(r.acumArs)}</td>
+      <td class="c-ars">$ ${fmtNum(r.restArs)}</td><td class="c-ars">$ ${fmtNum(r.acumArs)}</td>
     </tr>`;
   }).join("");
 }
