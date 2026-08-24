@@ -1,0 +1,19 @@
+# Fuente binaria de Excel (no se versiona)
+ahorro.xlsm
+*.xlsm
+*.xls
+*.xlsx
+
+# Capturas / temporales de pruebas
+*.png
+*.jpeg
+*.jpg
+*.gif
+*.webp
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
