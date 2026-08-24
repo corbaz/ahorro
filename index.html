@@ -144,22 +144,30 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 .chip.is-active{background:rgba(52,211,153,.14);border-color:rgba(52,211,153,.4);color:var(--accent)}
 .cuotas__count{font-family:var(--f-mono);font-size:.78rem;color:var(--txt-3);font-weight:500}
 .cuotas__count b{color:var(--txt);font-weight:600}
-.grid-cuotas{display:grid;gap:.6rem;grid-template-columns:repeat(auto-fill,minmax(11rem,1fr))}
-.cuota{position:relative;border-radius:1.15rem;padding:1rem 1.05rem;background:rgba(255,255,255,.028);border:1px solid var(--hairline);display:flex;flex-direction:column;gap:.5rem;transition:transform .45s var(--ease),border-color .35s var(--ease),background .35s var(--ease);will-change:transform}
+.grid-cuotas{display:grid;gap:.7rem;grid-template-columns:repeat(auto-fill,minmax(11.5rem,1fr))}
+.cuota{position:relative;border-radius:1.15rem;padding:1.1rem 1.1rem 1rem;background:rgba(255,255,255,.028);border:1px solid var(--hairline);display:flex;flex-direction:column;gap:.85rem;transition:transform .45s var(--ease),border-color .35s var(--ease),background .35s var(--ease);will-change:transform}
 .cuota:hover{transform:translateY(-2px);border-color:var(--hairline-2)}
-.cuota__top{display:flex;align-items:center;justify-content:space-between}
-.cuota__n{font-family:var(--f-mono);font-size:.74rem;color:var(--txt-3);font-weight:600;letter-spacing:.04em}
-.cuota__lvl{font-size:.56rem;color:var(--txt-3);font-weight:700;letter-spacing:.16em;text-transform:uppercase;padding:.2rem .5rem;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--hairline)}
-.cuota__amt{font-family:var(--f-mono);font-size:1.2rem;font-weight:600;letter-spacing:-0.02em;color:var(--txt)}
-.cuota__amt small{font-size:.52em;color:var(--txt-3);font-weight:500;margin-left:.7em}
-.cuota__check{position:absolute;top:.8rem;right:.8rem;width:1.4rem;height:1.4rem;border-radius:50%;border:1px solid var(--hairline-2);display:grid;place-items:center;flex:none;transition:all .35s var(--ease)}
-.cuota__check svg{width:.85rem;height:.85rem;stroke:#04110b;stroke-width:2.4;fill:none;opacity:0;transform:scale(.5);transition:all .35s var(--ease)}
+/* fila 1: N.º + pill de nivel (separados, bien repartidos) */
+.cuota__top{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+.cuota__n{font-family:var(--f-mono);font-size:.78rem;color:var(--txt-2);font-weight:700;letter-spacing:.02em}
+.cuota__lvl{font-size:.54rem;color:var(--txt-3);font-weight:700;letter-spacing:.18em;text-transform:uppercase;padding:.22rem .55rem;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--hairline);white-space:nowrap}
+/* fila 2: monto grande con u$s separado a la izquierda */
+.cuota__amt{display:flex;align-items:baseline;gap:.55rem;font-family:var(--f-mono);font-size:1.35rem;font-weight:600;letter-spacing:-0.02em;color:var(--txt);line-height:1}
+.cuota__amt small{font-size:.62em;color:var(--txt-3);font-weight:500;letter-spacing:.02em}
+/* fila 3: barra de progreso de la cuota */
+.cuota__share{height:4px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden}
+.cuota__share i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--accent-2),var(--accent));transition:width .8s var(--ease-out)}
+/* fila 4: check radioide (estado) en todas las tarjetas, al pie */
+.cuota__foot{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-top:.05rem}
+.cuota__status{font-family:var(--f-mono);font-size:.6rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--txt-3)}
+.cuota__check{width:1.5rem;height:1.5rem;border-radius:50%;border:1.5px solid var(--hairline-2);display:grid;place-items:center;flex:none;transition:all .35s var(--ease)}
+.cuota__check svg{width:.85rem;height:.85rem;stroke:#04110b;stroke-width:2.6;fill:none;opacity:0;transform:scale(.5);transition:all .35s var(--ease)}
+/* estado pagada */
 .cuota.is-paid{background:linear-gradient(160deg,rgba(52,211,153,.10),rgba(52,211,153,.02));border-color:rgba(52,211,153,.32)}
 .cuota.is-paid .cuota__amt{color:var(--txt-3);text-decoration:line-through;text-decoration-color:rgba(52,211,153,.5);text-decoration-thickness:1.5px}
+.cuota.is-paid .cuota__status{color:var(--accent)}
 .cuota.is-paid .cuota__check{background:var(--accent);border-color:var(--accent);box-shadow:0 0 16px var(--accent-glow)}
 .cuota.is-paid .cuota__check svg{opacity:1;transform:scale(1)}
-.cuota__share{height:3px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden;margin-top:.15rem}
-.cuota__share i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--accent-2),var(--accent));transition:width .8s var(--ease-out)}
 
 /* historial / ledger table */
 .ledger{border-radius:1rem;border:1px solid var(--hairline);overflow:hidden;background:rgba(0,0,0,.22)}
@@ -257,7 +265,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260824.1727</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260824.1755</span>
       <button class="btn btn--icon btn--ghost" id="btnBackup" title="Guardar respaldo"><svg viewBox="0 0 24 24"><path d="M4 7a2 2 0 0 1 2-2h2l1.5-2h5L16 5h2a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M9 13a3 3 0 0 0 6 0 3 3 0 1 0-6 0"/></svg></button>
     </div>
   </nav>
@@ -406,7 +414,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260824.1727";
+const APP_VERSION = "v.260824.1755";
 
 const state = {
   objetivo: 100000,
@@ -554,9 +562,9 @@ function renderCuotas(){
   cuotaGrid.innerHTML = list.map(c => `
     <div class="cuota${c.paid?" is-paid":""}">
       <div class="cuota__top"><span class="cuota__n">N.º ${c.n}</span><span class="cuota__lvl">${nivelLabel(c.n,state.numDep)}</span></div>
-      <div class="cuota__amt">${c.monto.toLocaleString("es-AR")}<small>u$s</small></div>
+      <div class="cuota__amt"><small>u$s</small><span>${c.monto.toLocaleString("es-AR")}</span></div>
       <div class="cuota__share"><i style="width:${(c.monto/maxMonto*100).toFixed(1)}%"></i></div>
-      <div class="cuota__check" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-10"/></svg></div>
+      <div class="cuota__foot"><span class="cuota__status">${c.paid?"Pagada":"Pendiente"}</span><span class="cuota__check" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-10"/></svg></span></div>
     </div>`).join("");
 }
 function nivelLabel(n,total){const r=n/Math.max(1,total); if(r<=.25)return"Inicial"; if(r<=.55)return"Medio"; if(r<=.8)return"Alto"; return"Final";}
