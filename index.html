@@ -145,8 +145,9 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 .cuotas__count{font-family:var(--f-mono);font-size:.78rem;color:var(--txt-3);font-weight:500}
 .cuotas__count b{color:var(--txt);font-weight:600}
 .grid-cuotas{display:grid;gap:.7rem;grid-template-columns:repeat(auto-fill,minmax(11.5rem,1fr))}
-.cuota{position:relative;border-radius:1.15rem;padding:1.1rem 1.1rem 1rem;background:linear-gradient(160deg,rgba(52,211,153,.06),rgba(52,211,153,.015));border:1px solid rgba(52,211,153,.22);display:flex;flex-direction:column;gap:.85rem;transition:transform .45s var(--ease),border-color .35s var(--ease),background .35s var(--ease);will-change:transform}
-.cuota:hover{transform:translateY(-2px);border-color:rgba(52,211,153,.4)}
+/* estado pendiente: rojo carmesí sutil */
+.cuota{position:relative;border-radius:1.15rem;padding:1.1rem 1.1rem 1rem;background:linear-gradient(160deg,rgba(251,113,133,.07),rgba(251,113,133,.018));border:1px solid rgba(251,113,133,.22);display:flex;flex-direction:column;gap:.85rem;transition:transform .45s var(--ease),border-color .35s var(--ease),background .35s var(--ease);will-change:transform}
+.cuota:hover{transform:translateY(-2px);border-color:rgba(251,113,133,.4)}
 /* fila 1: N.º + pill de nivel (separados, bien repartidos) */
 .cuota__top{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
 .cuota__n{font-family:var(--f-mono);font-size:.78rem;color:var(--txt-2);font-weight:700;letter-spacing:.02em}
@@ -155,17 +156,19 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 .cuota__amt{display:flex;align-items:baseline;gap:.55rem;font-family:var(--f-mono);font-size:1.35rem;font-weight:600;letter-spacing:-0.02em;color:var(--txt);line-height:1}
 .cuota__amt small{font-size:.62em;color:var(--txt-3);font-weight:500;letter-spacing:.02em}
 /* fila 3: barra de progreso de la cuota */
-.cuota__share{height:4px;border-radius:999px;background:rgba(52,211,153,.08);overflow:hidden}
-.cuota__share i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--accent-2),var(--accent));transition:width .8s var(--ease-out)}
+.cuota__share{height:4px;border-radius:999px;background:rgba(251,113,133,.10);overflow:hidden}
+.cuota__share i{display:block;height:100%;width:0%;background:linear-gradient(90deg,rgba(251,113,133,.6),var(--warn));transition:width .8s var(--ease-out)}
 /* fila 4: check radioide (estado) en todas las tarjetas, al pie */
 .cuota__foot{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-top:.05rem}
-.cuota__status{font-family:var(--f-mono);font-size:.6rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-2)}
-.cuota__check{width:1.5rem;height:1.5rem;border-radius:50%;border:1.5px solid rgba(52,211,153,.45);display:grid;place-items:center;flex:none;transition:all .35s var(--ease)}
+.cuota__status{font-family:var(--f-mono);font-size:.6rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--warn)}
+.cuota__check{width:1.5rem;height:1.5rem;border-radius:50%;border:1.5px solid rgba(251,113,133,.5);display:grid;place-items:center;flex:none;transition:all .35s var(--ease)}
 .cuota__check svg{width:.85rem;height:.85rem;stroke:#04110b;stroke-width:2.6;fill:none;opacity:0;transform:scale(.5);transition:all .35s var(--ease)}
-/* estado pagada */
+/* estado pagada (verde esmeralda) */
 .cuota.is-paid{background:linear-gradient(160deg,rgba(52,211,153,.10),rgba(52,211,153,.02));border-color:rgba(52,211,153,.32)}
 .cuota.is-paid .cuota__amt{color:var(--txt-3);text-decoration:line-through;text-decoration-color:rgba(52,211,153,.5);text-decoration-thickness:1.5px}
 .cuota.is-paid .cuota__status{color:var(--accent)}
+.cuota.is-paid .cuota__share{background:rgba(52,211,153,.10)}
+.cuota.is-paid .cuota__share i{background:linear-gradient(90deg,var(--accent-2),var(--accent))}
 .cuota.is-paid .cuota__check{background:var(--accent);border-color:var(--accent);box-shadow:0 0 16px var(--accent-glow)}
 .cuota.is-paid .cuota__check svg{opacity:1;transform:scale(1)}
 
@@ -265,7 +268,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260824.1756</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260824.1829</span>
       <button class="btn btn--icon btn--ghost" id="btnBackup" title="Guardar respaldo"><svg viewBox="0 0 24 24"><path d="M4 7a2 2 0 0 1 2-2h2l1.5-2h5L16 5h2a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M9 13a3 3 0 0 0 6 0 3 3 0 1 0-6 0"/></svg></button>
     </div>
   </nav>
@@ -414,7 +417,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260824.1756";
+const APP_VERSION = "v.260824.1829";
 
 const state = {
   objetivo: 100000,
