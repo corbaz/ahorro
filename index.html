@@ -43,6 +43,7 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 .nav__count{display:inline-flex;align-items:center;gap:.45rem;font-family:var(--f-mono);font-size:.74rem;font-weight:600;padding:.4rem .75rem;border-radius:999px;background:var(--surface-2);border:1px solid var(--hairline);color:var(--txt-2)}
 .nav__count b{color:var(--accent);font-weight:700}
 .nav__count .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent-glow)}
+.nav__ver{display:inline-flex;align-items:center;font-family:var(--f-mono);font-size:.62rem;font-weight:600;letter-spacing:.04em;color:var(--txt-3);padding:.34rem .55rem;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);cursor:default;white-space:nowrap}
 
 /* buttons */
 .btn{--b-bg:var(--surface-2);--b-fg:var(--txt);--b-bd:var(--hairline);display:inline-flex;align-items:center;gap:.6rem;font-family:var(--f-display);font-weight:600;font-size:.86rem;letter-spacing:-0.01em;padding:.7rem 1.1rem;border-radius:999px;cursor:pointer;background:var(--b-bg);color:var(--b-fg);border:1px solid var(--b-bd);transition:transform .5s var(--ease),background .35s var(--ease),border-color .35s var(--ease),color .35s var(--ease);will-change:transform}
@@ -252,6 +253,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260824.1650</span>
       <button class="btn btn--icon btn--ghost" id="btnBackup" title="Backup en localStorage (refactor HacerBackup)"><svg viewBox="0 0 24 24"><path d="M4 7a2 2 0 0 1 2-2h2l1.5-2h5L16 5h2a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M9 13a3 3 0 0 0 6 0 3 3 0 1 0-6 0"/></svg></button>
     </div>
   </nav>
@@ -398,6 +400,9 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
    ============================================================ */
 const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // serial Excel 46257.51486 (pago cuota 25)
+/* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
+   vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
+const APP_VERSION = "v.260824.1650";
 
 const state = {
   objetivo: 100000,
@@ -647,6 +652,9 @@ const navPend=$("navPend"),track=$("track"),trackFill=$("trackFill"),trackRest=$
 const inObj=$("inObj"),inNum=$("inNum"),inDolar=$("inDolar");
 const modalPagar=$("modalPagar"),modalDolar=$("modalDolar"),checklist=$("checklist"),mPendUsd=$("mPendUsd"),mPendArs=$("mPendArs"),mTildUsd=$("mTildUsd"),mTildArs=$("mTildArs");
 const modalConfirm=$("modalConfirm");
+const navVer=$("navVer");
+// estampar la versión en el badge (arriba a la derecha)
+navVer.textContent = APP_VERSION;
 
 $("btnRecalc").addEventListener("click", ()=> modalConfirm.classList.add("show"));
 $("btnConfirmYes").addEventListener("click", ()=>{ modalConfirm.classList.remove("show"); recalcular(); });
