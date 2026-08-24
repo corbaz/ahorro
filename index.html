@@ -221,7 +221,11 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
 .checkrow .label{font-family:var(--f-mono);font-size:.85rem;font-weight:600;color:var(--txt);flex:1}
 .checkrow .label small{color:var(--txt-3);font-weight:500;margin-left:.3rem}
 .checkrow input:checked ~ .label{text-decoration:line-through;text-decoration-color:rgba(52,211,153,.5)}
-.checkrow .amt{font-family:var(--f-mono);font-size:.85rem;color:var(--accent);font-weight:600}
+.checkrow .amt{display:flex;align-items:center;gap:.4rem;font-family:var(--f-mono);font-size:.82rem;font-weight:600;flex:none}
+.checkrow .amt__usd{color:var(--accent)}
+.checkrow .amt__sep{color:var(--txt-3);font-weight:400}
+.checkrow .amt__ars{color:var(--ars)}
+.checkrow input:checked ~ .amt{text-decoration:line-through;text-decoration-color:rgba(52,211,153,.5)}
 .modal__foot{display:flex;gap:.6rem;justify-content:flex-end;flex-wrap:wrap}
 
 /* confirm modal */
@@ -268,7 +272,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260824.1846</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260824.1925</span>
       <button class="btn btn--icon btn--ghost" id="btnBackup" title="Guardar respaldo"><svg viewBox="0 0 24 24"><path d="M4 7a2 2 0 0 1 2-2h2l1.5-2h5L16 5h2a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M9 13a3 3 0 0 0 6 0 3 3 0 1 0-6 0"/></svg></button>
     </div>
   </nav>
@@ -438,7 +442,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260824.1846";
+const APP_VERSION = "v.260824.1925";
 
 const state = {
   objetivo: 100000,
@@ -575,6 +579,8 @@ function render(){
   fxPaidUsd.textContent=fmtUsd(ahorrado); fxPaidArs.textContent=fmtArs(ars(ahorrado));
   renderCuotas();
   renderHistorial();
+  // si el modal de pago está abierto, refrescar la checklist (montos en pesos) y los totales
+  if (modalPagar && modalPagar.classList.contains("show")){ renderChecklist(); actualizarTotalesModal(); }
   if (state.cuotas.length>0 && pend.length===0) celebrate.classList.add("show"); else celebrate.classList.remove("show");
 }
 
@@ -646,13 +652,20 @@ function abrirPagar(){
 function cerrarPagar(){ modalPagar.classList.remove("show"); state._sel = new Set(); }
 function renderChecklist(){
   const pend = pendientes().sort((a,b)=>a.n-b.n);
-  checklist.innerHTML = pend.map(c => `
+  checklist.innerHTML = pend.map(c => {
+    const ars = c.monto * state.dolar;
+    return `
     <label class="checkrow">
       <input type="checkbox" data-n="${c.n}" ${state._sel.has(c.n)?"checked":""}/>
       <span class="box"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-10"/></svg></span>
-      <span class="label">Cuota ${c.n}<small>· u$s ${c.monto.toLocaleString("es-AR")}</small></span>
-      <span class="amt">u$s ${c.monto.toLocaleString("es-AR")}</span>
-    </label>`).join("");
+      <span class="label">Cuota ${c.n}</span>
+      <span class="amt">
+        <span class="amt__usd">u$s ${c.monto.toLocaleString("es-AR")}</span>
+        <span class="amt__sep">/</span>
+        <span class="amt__ars">$ ${ars.toLocaleString("es-AR")}</span>
+      </span>
+    </label>`;
+  }).join("");
   checklist.querySelectorAll('input[type=checkbox]').forEach(cb=>{
     cb.addEventListener("change", ()=>{ const n=+cb.dataset.n; cb.checked?state._sel.add(n):state._sel.delete(n); actualizarTotalesModal(); });
   });
