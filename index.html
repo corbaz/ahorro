@@ -4,13 +4,13 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Reto de Ahorro · Dashboard</title>
-<meta name="description" content="Dashboard del Reto de Ahorro — conversión del libro Excel con macros VBA (hojas Ahorro, backup, historial) a app web autocontenida con modales como el UserForm de Excel." />
+<meta name="description" content="Reto de Ahorro — seguí tu plan de ahorro cuota por cuota, con historial de pagos y conversión a pesos." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
 /* ============================================================
-   RETO DE AHORRO · DASHBOARD  (refactor v2: historial + modales)
+   RETO DE AHORRO · DASHBOARD
    Ethereal Glass (dark OLED) + Asymmetrical Bento
    ============================================================ */
 :root{
@@ -176,7 +176,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
 .ledger__foot .meta{font-family:var(--f-mono);font-size:.74rem;color:var(--txt-3)}
 .ledger__foot .meta b{color:var(--txt-2)}
 
-/* modal (UserForm1 equivalent) */
+/* modal */
 .modal{position:fixed;inset:0;z-index:70;display:none;place-items:center;padding:1rem;background:rgba(5,5,6,.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 .modal.show{display:grid;animation:fadein .4s var(--ease)}
 .modal__card{width:min(680px,100%);max-height:90vh;display:flex;flex-direction:column;border-radius:var(--radius);padding:.6rem;background:var(--shell);border:1px solid var(--hairline);box-shadow:0 40px 90px -40px rgba(0,0,0,.95);animation:popin .45s var(--ease-out)}
@@ -249,12 +249,12 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
   <nav class="nav reveal" aria-label="Principal">
     <div class="nav__brand">
       <span class="nav__logo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 5.5C14 4 9.5 4.2 7 6.4 4.6 8.5 5 12 8 13.2c2 .8 4 .8 6 .2M7 18.5c2.5 1.6 7 1.6 9-.3 2.3-2.1 1.9-5.6-1.1-6.8"/></svg></span>
-      <span><span class="nav__title">Reto de Ahorro</span><br/><span class="nav__sub">Dashboard · Excel + VBA → web (hojas Ahorro · backup · historial)</span></span>
+      <span><span class="nav__title">Reto de Ahorro</span><br/><span class="nav__sub">Seguí tu plan de ahorro cuota por cuota</span></span>
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260824.1651</span>
-      <button class="btn btn--icon btn--ghost" id="btnBackup" title="Backup en localStorage (refactor HacerBackup)"><svg viewBox="0 0 24 24"><path d="M4 7a2 2 0 0 1 2-2h2l1.5-2h5L16 5h2a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M9 13a3 3 0 0 0 6 0 3 3 0 1 0-6 0"/></svg></button>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260824.1708</span>
+      <button class="btn btn--icon btn--ghost" id="btnBackup" title="Guardar respaldo"><svg viewBox="0 0 24 24"><path d="M4 7a2 2 0 0 1 2-2h2l1.5-2h5L16 5h2a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M9 13a3 3 0 0 0 6 0 3 3 0 1 0-6 0"/></svg></button>
     </div>
   </nav>
 
@@ -283,21 +283,21 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
 
     <!-- config (Resetear) -->
     <article class="card b-config reveal"><div class="card__inner">
-      <div class="card__head"><div><div class="card__title">Configuración del reto</div><div class="card__hint">Refactor de <span class="code">Resetear()</span> · pide confirmación y registra un separador en el historial</div></div><span class="eyebrow">Ajustes</span></div>
+      <div class="card__head"><div><div class="card__title">Configuración del reto</div><div class="card__hint">Definí tu objetivo y la cantidad de depósitos · el plan se regenera y queda registrado</div></div><span class="eyebrow">Ajustes</span></div>
       <div class="cfg__row">
         <div class="field"><label>Total Objetivo</label><div class="input__wrap"><span class="pre">u$s</span><input class="input" id="inObj" type="number" min="1" step="1000" value="100000" inputmode="numeric"/></div></div>
         <div class="field"><label>Nº de Depósitos</label><input class="input" id="inNum" type="number" min="1" max="100" step="1" value="100" inputmode="numeric"/></div>
       </div>
-      <p class="cfg__note">Cuota creciente: <span class="code">k = objetivo / Σ(1..n)</span>, cuota <span class="code">n</span> = <span class="code">k·n + per</span>. Al recalcular se regeneran todas las cuotas (pendientes) y se deja constancia en el historial.</p>
+      <p class="cfg__note">Las cuotas crecen de a poco: cada una vale <span class="code">k·n</span> siendo <span class="code">k = objetivo / Σ(1..n)</span>. Al recalcular se regeneran todas las cuotas como pendientes.</p>
       <div class="cfg__actions">
         <button class="btn btn--primary" id="btnRecalc"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></svg> Recalcular <span class="btn__chev"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></button>
         <button class="btn btn--ghost" id="btnResetAll"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13"/></svg> Reiniciar cuotas</button>
       </div>
     </div></article>
 
-    <!-- fx (UserForm rate) -->
+    <!-- cotización dólar -->
     <article class="card b-fx reveal"><div class="card__inner">
-      <div class="card__head"><div><div class="card__title">Cotización dólar</div><div class="card__hint">Refactor del <span class="code">UserForm1</span> · tasa usada al pagar y para los ARS</div></div><span class="eyebrow">USD → ARS</span></div>
+      <div class="card__head"><div><div class="card__title">Cotización dólar</div><div class="card__hint">Tasa que se usa al pagar y para mostrar los montos en pesos</div></div><span class="eyebrow">USD → ARS</span></div>
       <div class="fx">
         <div class="fx__rate field"><label>Cotización dólar (1 u$s = … $)</label><input class="input" id="inDolar" type="number" min="0" step="1" value="1" inputmode="decimal" style="max-width:18rem"/></div>
         <div class="fx__grid">
@@ -309,7 +309,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
 
     <!-- cuotas grid (view-only + abrir modal) -->
     <article class="card b-grid reveal"><div class="card__inner">
-      <div class="card__head"><div><div class="card__title">Cuotas del desafío</div><div class="card__hint">Vista de las cuotas · para pagar, abrí el modal (como el <span class="code">UserForm1</span> de Excel)</div></div>
+      <div class="card__head"><div><div class="card__title">Cuotas del desafío</div><div class="card__hint">Tildá las cuotas que pagaste para marcarlas como pagadas</div></div>
         <div class="cuotas__bar">
           <div class="cuotas__filters" id="filters"><button class="chip is-active" data-f="all">Todas</button><button class="chip" data-f="pend">Pendientes</button><button class="chip" data-f="paid">Pagadas</button></div>
           <button class="btn btn--primary" id="btnPagar"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-10"/></svg> Pagar cuotas</button>
@@ -321,7 +321,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
 
     <!-- historial ledger -->
     <article class="card b-hist reveal"><div class="card__inner">
-      <div class="card__head"><div><div class="card__title">Historial de pagos</div><div class="card__hint">Refactor de la hoja <span class="code">historial</span> · acumula cada pago y los recálculos del plan</div></div><span class="eyebrow">9 columnas</span></div>
+      <div class="card__head"><div><div class="card__title">Historial de pagos</div><div class="card__hint">Cada pago que hacés queda acá, con fecha y montos en dólares y pesos</div></div><span class="eyebrow">Registro</span></div>
       <div class="ledger">
         <div class="ledger__scroll">
           <table class="ledger__t" id="ledgerT">
@@ -347,19 +347,19 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
           <button class="btn btn--ghost" id="btnImport"><svg viewBox="0 0 24 24"><path d="M12 21V9m0 0l-4 4m4-4l4 4M5 3h14"/></svg> Importar JSON</button>
           <input type="file" id="fileImport" accept="application/json" hidden/>
         </div>
-        <div style="font-size:.74rem;color:var(--txt-3);font-weight:500">Backup automático en <b style="color:var(--accent)">localStorage</b> · refactor de <span class="code">HacerBackup()</span></div>
+        <div style="font-size:.74rem;color:var(--txt-3);font-weight:500">Tu progreso se guarda automáticamente en este navegador</div>
       </div>
     </div></article>
   </section>
 
-  <p class="foot">Convertido desde <b>ahorro.xlsm</b> (VBA → HTML/CSS/JS) · hojas Ahorro + backup + historial · modales como el <b>UserForm1</b> de Excel.</p>
+  <p class="foot">Reto de Ahorro · seguí tu plan de ahorro cuota por cuota.</p>
 </div>
 
-<!-- MODAL: Pagar cuotas (UserForm1) -->
+<!-- MODAL: Pagar cuotas -->
 <div class="modal" id="modalPagar" role="dialog" aria-modal="true" aria-label="Pagar cuotas">
   <div class="modal__card"><div class="modal__inner">
     <div class="modal__head">
-      <div><div class="modal__title">Cuotas pendientes</div><div class="modal__sub">Tildá las que pagaste · refactor del <span class="code">UserForm1</span></div></div>
+      <div><div class="modal__title">Cuotas pendientes</div><div class="modal__sub">Tildá las que pagaste</div></div>
       <button class="btn btn--icon btn--ghost" id="btnClosePagar"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
     <div class="modal__body">
@@ -380,7 +380,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
 <!-- MODAL: confirmar recálculo -->
 <div class="modal modal--confirm" id="modalConfirm" role="dialog" aria-modal="true">
   <div class="modal__card"><div class="modal__inner">
-    <div class="modal__head"><div><div class="modal__title">¿Recalcular el plan?</div><div class="modal__sub">Se regenerarán todas las cuotas y se dejará constancia en el historial.</div></div></div>
+    <div class="modal__head"><div><div class="modal__title">¿Recalcular el plan?</div><div class="modal__sub">Se van a regenerar todas las cuotas y quedará registrado en tu historial.</div></div></div>
     <div class="modal__foot" style="justify-content:stretch"><button class="btn btn--ghost" id="btnConfirmNo" style="flex:1;justify-content:center">Cancelar</button><button class="btn btn--primary" id="btnConfirmYes" style="flex:1;justify-content:center">Sí, recalcular</button></div>
   </div></div>
 </div>
@@ -396,13 +396,13 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
 
 <script>
 /* ============================================================
-   ESTADO + LÓGICA (refactor fiel de las macros VBA actualizadas)
+   Estado y lógica de la app
    ============================================================ */
 const STORE_KEY = "reto-ahorro-dashboard/v2";
-const seedFecha = "2026-08-23T12:21:24.000Z"; // serial Excel 46257.51486 (pago cuota 25)
+const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260824.1651";
+const APP_VERSION = "v.260824.1708";
 
 const state = {
   objetivo: 100000,
@@ -415,7 +415,7 @@ const state = {
   _sel: new Set(),
 };
 
-/* ---- Resetear(): calendario triangular/aritmético (VBA Módulo1) ---- */
+/* ---- Calendario de cuotas crecientes (triangular) ---- */
 function resetear(objetivo, numDep){
   objetivo = Math.max(1, Number(objetivo) || 0);
   numDep = Math.max(1, Math.min(100, Math.round(Number(numDep) || 1)));
@@ -423,7 +423,7 @@ function resetear(objetivo, numDep){
   let k = Math.round(objetivo / tri); if (k < 1) k = 1;
   const totalBase = k * tri;
   const diff = objetivo - totalBase;
-  const per = Math.trunc(diff / numDep);     // VBA Fix = trunc toward zero
+  const per = Math.trunc(diff / numDep);     // parte entera del reparto
   const remainder = diff - per * numDep;
   const cuotas = [];
   for (let dep = 1; dep <= numDep; dep++){
@@ -444,7 +444,7 @@ const fmtDate = (iso) => { const d=new Date(iso); if(isNaN(d)) return "—";
   return d.toLocaleString("es-AR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}); }
 const nowIso = () => new Date().toISOString();
 
-/* ---- HacerBackup(): localStorage (incluye historial) ---- */
+/* ---- Guardar / restaurar estado (localStorage) ---- */
 function hacerBackup(silent=true){
   try{
     localStorage.setItem(STORE_KEY, JSON.stringify({
@@ -468,9 +468,9 @@ function restaurarBackup(){
   }catch(e){ return false; }
 }
 
-/* ---- Registro en historial (refactor UserForm1.CommandButton1_Click) ----
-   Por cada cuota tildada: marca pagada, recalcula restante/acumulado DESPUÉS,
-   y appenda una fila con las 9 columnas (igual que el Excel). */
+/* ---- Registrar pagos en el historial ----
+   Por cada cuota tildada: la marca pagada, recalcula restante/acumulado después,
+   y agrega una fila con los montos en dólares y pesos. */
 function registrarPagos(selectedNs){
   const rate = Math.max(0, Number(modalDolar.value) || 0);
   state.dolar = rate;                       // la tasa queda para próximos pagos/ARS
@@ -493,12 +493,12 @@ function registrarPagos(selectedNs){
   return any;
 }
 
-/* ---- Resetear + separador "NUEVO PLAN" en historial (VBA) ---- */
+/* ---- Recalcular el plan + dejar separador en el historial ---- */
 function recalcular(){
   const obj = Math.max(1, Number(inObj.value) || 1);
   const num = Math.max(1, Math.min(100, Math.round(Number(inNum.value) || 1)));
   state.objetivo = obj; state.numDep = num;
-  // separador en historial (como hace Resetear en la hoja historial)
+  // separador en el historial que marca el cambio de plan
   state.historial.push({
     tipo:"plan", fecha: nowIso(), objetivo: obj, numDep: num,
     texto: `--- NUEVO PLAN: objetivo u$s ${fmtNum(obj)}  |  ${num} cuotas  |  ${fmtDate(nowIso())} ---`
@@ -563,7 +563,7 @@ function renderHistorial(){
   const totalPagado = rows.filter(r=>r.tipo==="pago").reduce((s,r)=>s+r.montoUsd,0);
   histTotal.textContent = fmtUsd(totalPagado);
   ledgerEmpty.style.display = rows.length? "none":"block";
-  // newest first (más útil para un dashboard); Excel va oldest→newest
+  // más reciente primero (más cómodo para ver tus últimos pagos arriba)
   ledgerBody.innerHTML = [...rows].reverse().map(r => {
     if (r.tipo==="plan") return `<tr class="plan"><td colspan="9">${escapeHtml(r.texto||"--- NUEVO PLAN ---")}</td></tr>`;
     return `<tr>
@@ -578,7 +578,7 @@ function renderHistorial(){
 function escapeHtml(s){return String(s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));}
 
 /* ============================================================
-   MODAL "Pagar cuotas" (UserForm1)
+   Modal "Pagar cuotas"
    ============================================================ */
 function abrirPagar(){
   if (pendientes().length===0){ toast("No quedan cuotas pendientes", true); return; }
@@ -618,7 +618,7 @@ function comprar(){
   render();
   toast(`${ns.length} cuota(s) pagada(s) · registradas en el historial`);
   if (pendientes().length===0){ cerrarPagar(); celebrate.classList.add("show"); return; }
-  // recargar la lista (como CargarCuotas en VBA)
+  // recargar la lista de pendientes
   state._sel = new Set(); renderChecklist(); actualizarTotalesModal();
 }
 
@@ -677,12 +677,12 @@ modalPagar.addEventListener("click", e=>{ if(e.target===modalPagar) cerrarPagar(
 modalConfirm.addEventListener("click", e=>{ if(e.target===modalConfirm) modalConfirm.classList.remove("show"); });
 document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ cerrarPagar(); modalConfirm.classList.remove("show"); celebrate.classList.remove("show"); } });
 
-// load: restaurar o sembrar con el estado real del Excel actual
+// cargar: restaurar el progreso guardado, o arrancar con un plan de ejemplo
 const had = restaurarBackup();
 inObj.value = state.objetivo; inNum.value = state.numDep; inDolar.value = state.dolar;
 if (!had || !state.cuotas.length){
   state.cuotas = resetear(state.objetivo, state.numDep);
-  // sembrar el pago de la cuota 25 tal cual está en tu hoja historial
+  // ejemplo inicial: una cuota ya pagada para mostrar cómo se ve el historial
   const c25 = state.cuotas.find(c=>c.n===25); if (c25) c25.paid = true;
   state.historial = [{ tipo:"pago", fecha:seedFecha, n:25, rate:1,
     montoUsd:490, montoArs:490, restUsd:99510, acumUsd:490, restArs:99510, acumArs:490 }];
