@@ -11,17 +11,22 @@ cd "$ROOT"
 
 MSG="${1:-chore: update dashboard}"
 
-# asegurar que el hook pre-commit existe (se recrea aquí para no depender de .git)
+# asegurar que el hook pre-commit existe y apunta bien a la raíz del repo
 mkdir -p "$ROOT/.git/hooks"
 cat > "$ROOT/.git/hooks/pre-commit" <<'HOOK'
 #!/usr/bin/env bash
-bash "$(git rev-parse --git-common-path 2>/dev/null || echo .git)/../scripts/bump-version.sh"
+ROOT="$(git rev-parse --show-toplevel)"
+bash "$ROOT/scripts/bump-version.sh"
 HOOK
 chmod +x "$ROOT/.git/hooks/pre-commit"
 
-# stage y commit (el hook estampa la versión automáticamente)
+# stage y commit (el hook estampa la versión automáticamente).
+# Si no hay nada nuevo, git commit sale 1 y lo tratamos como "nada para commitear".
 git add -A
-git commit -m "$MSG" || { echo "[push] nada para commitear (¿ya estaba actualizado?)"; }
+if ! git commit -m "$MSG"; then
+  echo "[push] nada para commitear (¿ya estaba actualizado?)"
+  exit 0
+fi
 
 # push
 git push origin HEAD

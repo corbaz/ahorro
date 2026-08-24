@@ -8,6 +8,9 @@ Conversión del libro de Excel `ahorro.xlsm` (con macros VBA) a una **app web au
 
 El archivo origen vive en `/Users/jucorbaz/www/dsh/ahorro.xlsm` y NO se versiona aquí (es binario grande). El dashboard sí.
 
+- **Repo:** https://github.com/corbaz/ahorro
+- **Despliegue (Vercel, auto-deploy por Git):** https://ahorro-corbaz.vercel.app
+
 ## Estado de la conversión (VBA → JS)
 
 | Macro / hoja VBA | Implementación en el dashboard | Estado |
@@ -49,11 +52,29 @@ Checklist tras tocar JS:
 
 ```
 ahorro-dashboard/
-├── index.html      # app completa (HTML + CSS + JS en un archivo)
-├── README.md       # documentación para usuarios
-├── AGENTS.md       # este archivo
-└── ahorro.xlsm     # NO se versiona (origen binario, fuera del repo)
+├── index.html             # app completa (HTML + CSS + JS en un archivo)
+├── README.md              # documentación para usuarios
+├── AGENTS.md              # este archivo
+├── push.sh                # helper: bump versión + commit + push (un paso)
+├── scripts/
+│   └── bump-version.sh    # estampa v.YYMMDD.HHMM (GMT-3 BA) en index.html
+└── .git/hooks/pre-commit  # corre bump-version en cada commit (no se versiona)
 ```
+
+El archivo `ahorro.xlsm` original NO se versiona (origen binario, fuera del repo).
+
+## Versión de build
+
+El dashboard muestra arriba a la derecha un badge con la versión, formato **`v.YYMMDD.HHMM`** en hora de **Buenos Aires (GMT-3)**. Se actualiza **automáticamente en cada push**:
+
+- El hook `pre-commit` corre `scripts/bump-version.sh`, que estampa la hora actual de BA en `const APP_VERSION` (y el badge `navVer`) dentro de `index.html` y lo incluye en el commit.
+- Cada commit / push lleva entonces una versión fresca.
+
+Para pushear con versión nueva en un paso: `./push.sh "mensaje"` (o `./push.sh` para mensaje auto). Manual: `git add -A && git commit -m "..." && git push` (el hook igual estampa).
+
+## Despliegue (Vercel)
+
+El repo está conectado a **Vercel** con auto-deploy por Git: cada push a `master` despliega automáticamente a **https://ahorro-corbaz.vercel.app**. El dominio viejo `ahorro-mu.vercel.app` fue eliminado.
 
 ## Keys de localStorage
 

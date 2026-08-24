@@ -4,6 +4,9 @@ Una **app de dashboard web autocontenida** que convierte un libro de Excel con m
 
 > Un solo archivo (`index.html`) que podés abrir en cualquier navegador moderno.
 
+🔗 **Desplegado en vivo:** https://ahorro-corbaz.vercel.app
+📦 **Código:** https://github.com/corbaz/ahorro
+
 ## Ruta rápida
 
 1. Abrí `index.html` en tu navegador (o servilo, ver abajo).
@@ -68,12 +71,42 @@ Dashboard de nivel agencia, construido con las skills `high-end-visual-design` +
 
 ```
 ahorro-dashboard/
-├── index.html      # la app completa (HTML + CSS + JS en un archivo)
-├── README.md       # este archivo
-└── AGENTS.md       # instrucciones para agentes de IA que trabajen acá
+├── index.html             # la app completa (HTML + CSS + JS en un archivo)
+├── README.md              # este archivo
+├── AGENTS.md              # instrucciones para agentes de IA que trabajen acá
+├── push.sh                # helper: bump versión + commit + push (un paso)
+└── scripts/
+    └── bump-version.sh    # estampa v.YYMMDD.HHMM (GMT-3 BA) en index.html
 ```
 
 El archivo `ahorro.xlsm` original no se versiona (es binario grande y es la fuente, no el producto).
+
+## Versión de build
+
+El dashboard muestra arriba a la derecha un badge con la versión, formato **`v.YYMMDD.HHMM`** en hora de **Buenos Aires (GMT-3)**. Se actualiza **automáticamente en cada push**:
+
+- El hook `pre-commit` corre `scripts/bump-version.sh`, que estampa la hora actual de BA en `const APP_VERSION` dentro de `index.html` y lo incluye en el commit.
+- Por eso cada commit (y cada push) lleva una versión fresca.
+
+Para pushear con versión nueva en un solo paso:
+
+```bash
+./push.sh                    # mensaje auto
+./push.sh "mi mensaje"       # mensaje propio
+```
+
+O manual (el hook igual estampa la versión):
+
+```bash
+git add -A && git commit -m "..." && git push
+```
+
+## Despliegue (Vercel)
+
+El repo está conectado a **Vercel** (auto-deploy por Git): cada push a `master` despliega automáticamente.
+
+- URL pública: **https://ahorro-corbaz.vercel.app**
+- El dominio viejo `ahorro-mu.vercel.app` fue eliminado.
 
 ## Datos persistentes
 
