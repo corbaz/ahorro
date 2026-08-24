@@ -179,6 +179,13 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 .ledger__scroll::-webkit-scrollbar-thumb{background:var(--hairline-2);border-radius:999px}
 table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);font-size:.78rem}
 .ledger__t thead th{position:sticky;top:0;z-index:2;background:#0d0f12;color:var(--txt-3);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:.62rem;padding:.7rem .6rem;text-align:center;border-bottom:1px solid var(--hairline);white-space:nowrap}
+.ledger__t thead th.th-sort{cursor:pointer;user-select:none;transition:color .25s var(--ease)}
+.ledger__t thead th.th-sort:hover{color:var(--txt)}
+.ledger__t thead th.th-sort.is-active{color:var(--accent)}
+.sort-ind{display:inline-block;width:.7rem;margin-left:.15rem;color:var(--accent);font-size:.9em}
+.sort-ind::after{content:""}
+.th-sort.is-active[data-dir="asc"] .sort-ind::after{content:"\2191"}   /* ↑ */
+.th-sort.is-active[data-dir="desc"] .sort-ind::after{content:"\2193"}  /* ↓ */
 .ledger__t tbody td{padding:.55rem .6rem;text-align:center;border-bottom:1px solid rgba(255,255,255,.04);white-space:nowrap}
 .ledger__t tbody tr:hover td{background:rgba(255,255,255,.03)}
 .ledger__t .c-date{color:var(--txt-2);text-align:left}
@@ -272,7 +279,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260824.1929</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260824.1939</span>
       <button class="btn btn--icon btn--ghost" id="btnBackup" title="Guardar respaldo"><svg viewBox="0 0 24 24"><path d="M4 7a2 2 0 0 1 2-2h2l1.5-2h5L16 5h2a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M9 13a3 3 0 0 0 6 0 3 3 0 1 0-6 0"/></svg></button>
     </div>
   </nav>
@@ -345,7 +352,9 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
         <div class="ledger__scroll">
           <table class="ledger__t" id="ledgerT">
             <thead><tr>
-              <th>Fecha</th><th>N.º cuota</th><th>Cotización u$s</th><th>Cuota u$s</th><th>Cuota $</th><th>Restante u$s</th><th>Acumulado u$s</th><th>Restante $</th><th>Acumulado $</th>
+              <th class="th-sort" data-sort="fecha">Fecha <span class="sort-ind" id="ind-fecha"></span></th>
+              <th class="th-sort" data-sort="n">N.º cuota <span class="sort-ind" id="ind-n"></span></th>
+              <th>Cotización u$s</th><th>Cuota u$s</th><th>Cuota $</th><th>Restante u$s</th><th>Acumulado u$s</th><th>Restante $</th><th>Acumulado $</th>
             </tr></thead>
             <tbody id="ledgerBody"></tbody>
           </table>
@@ -442,7 +451,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260824.1929";
+const APP_VERSION = "v.260824.1939";
 
 const state = {
   objetivo: 100000,
@@ -451,6 +460,8 @@ const state = {
   cuotas: [],     // {n, monto, paid}
   historial: [],  // {tipo:"pago"|"plan", fecha, n?, rate?, montoUsd?, montoArs?, restUsd?, acumUsd?, restArs?, acumArs?, texto?}
   filter: "all",
+  // orden del historial: {col:"fecha"|"n", dir:"asc"|"desc"}
+  sort: {col:"fecha", dir:"desc"},
   // modal (transient)
   _sel: new Set(),
 };
@@ -604,8 +615,18 @@ function renderHistorial(){
   const totalPagado = rows.filter(r=>r.tipo==="pago").reduce((s,r)=>s+r.montoUsd,0);
   histTotal.textContent = fmtUsd(totalPagado);
   ledgerEmpty.style.display = rows.length? "none":"block";
-  // más reciente primero (más cómodo para ver tus últimos pagos arriba)
-  ledgerBody.innerHTML = [...rows].reverse().map(r => {
+  // ordenar según state.sort; los separadores "plan" siempre al fondo del orden
+  const sortCol = state.sort.col, sortDir = state.sort.dir;
+  const sorted = [...rows].sort((a,b)=>{
+    if (a.tipo!=="pago" && b.tipo==="pago") return 1;
+    if (b.tipo!=="pago" && a.tipo==="pago") return -1;
+    if (a.tipo!=="pago" && b.tipo!=="pago") return 0;
+    let va, vb;
+    if (sortCol==="fecha"){ va=new Date(a.fecha).getTime(); vb=new Date(b.fecha).getTime(); }
+    else { va=a.n||0; vb=b.n||0; }
+    return sortDir==="asc" ? (va-vb) : (vb-va);
+  });
+  ledgerBody.innerHTML = sorted.map(r => {
     if (r.tipo==="plan") return `<tr class="plan"><td colspan="9">${escapeHtml(r.texto||"--- NUEVO PLAN ---")}</td></tr>`;
     return `<tr>
       <td class="c-date">${fmtDate(r.fecha)}</td>
@@ -615,6 +636,20 @@ function renderHistorial(){
       <td class="c-ars">$ ${fmtNum(r.restArs)}</td><td class="c-ars">$ ${fmtNum(r.acumArs)}</td>
     </tr>`;
   }).join("");
+  // actualizar indicadores de orden en los th
+  document.querySelectorAll('#ledgerT th.th-sort').forEach(th=>{
+    const active = th.dataset.sort===sortCol;
+    th.classList.toggle('is-active', active);
+    th.dataset.dir = active ? sortDir : '';
+  });
+}
+function toggleSort(col){
+  if (state.sort.col===col){
+    state.sort.dir = state.sort.dir==="asc" ? "desc" : "asc";
+  } else {
+    state.sort.col = col; state.sort.dir = "asc";
+  }
+  renderHistorial();
 }
 function escapeHtml(s){return String(s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));}
 
@@ -737,6 +772,10 @@ $("btnCloseCelebrate").addEventListener("click", ()=> celebrate.classList.remove
 $("btnBackup").addEventListener("click", ()=> hacerBackup(false));
 $("btnClearHist").addEventListener("click", ()=>{ if(state.historial.length){ state.historial=[]; hacerBackup(); render(); toast("Historial vaciado"); } });
 filters.addEventListener("click", e=>{ const b=e.target.closest(".chip"); if(b) setFilter(b.dataset.f); });
+// ordenar historial al clickear los headers Fecha / N.º cuota
+document.querySelectorAll('#ledgerT th.th-sort').forEach(th=>{
+  th.addEventListener("click", ()=> toggleSort(th.dataset.sort));
+});
 // flujo: "Pagar cuotas" abre primero el submodal de cotización, luego el de pago
 $("btnPagar").addEventListener("click", abrirSubRate);
 $("btnClosePagar").addEventListener("click", cerrarPagar);
