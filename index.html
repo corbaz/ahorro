@@ -104,6 +104,7 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 .b-kpis{grid-column:span 4;grid-row:span 2;display:grid;grid-template-rows:subgrid;gap:clamp(.7rem,1.6vw,1.1rem)}
 .b-config{grid-column:span 5}
 .b-fx{grid-column:span 7}
+.b-ritmo{grid-column:span 12}
 .b-grid{grid-column:span 12}
 .b-hist{grid-column:span 12}
 .b-export{grid-column:span 12}
@@ -162,6 +163,30 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 .fx__val{font-family:var(--f-mono);font-size:1.4rem;font-weight:600;letter-spacing:-0.02em}
 .fx__ars{font-family:var(--f-mono);font-size:.9rem;color:var(--ars);font-weight:500}
 .fx__col.pend .fx__val{color:var(--warn)}.fx__col.paid .fx__val{color:var(--accent)}
+
+/* config readonly (fecha inicio) */
+.cfg__readonly{font-family:var(--f-mono);font-size:1rem;font-weight:600;color:var(--txt-2);padding:.5rem 0}
+/* input date */
+.input[type=date]{font-family:var(--f-display;font-weight:600;color-scheme:dark}
+[data-theme="light"] .input[type=date]{color-scheme:light}
+
+/* ritmo de ahorro */
+.ritmo{display:flex;flex-direction:column;gap:1.4rem}
+.ritmo__kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem}
+.ritmo__kpi{border-radius:1rem;padding:1rem 1.1rem;background:var(--inset-bg);border:1px solid var(--hairline);display:flex;flex-direction:column;gap:.3rem}
+.ritmo__label{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--txt-3);font-weight:600}
+.ritmo__val{font-family:var(--f-mono);font-size:1.5rem;font-weight:600;letter-spacing:-0.02em;color:var(--txt)}
+.ritmo__sub{font-size:.68rem;color:var(--txt-3);font-weight:500}
+.ritmo__bar{display:flex;flex-direction:column;gap:.6rem}
+.ritmo__bar-label{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:.7rem;color:var(--txt-3);font-weight:500}
+.ritmo__bar-label b{color:var(--txt-2)}
+.ritmo__track{position:relative;height:12px;border-radius:999px;background:var(--inset-bg);border:1px solid var(--hairline);overflow:visible}
+.ritmo__fill{position:absolute;inset:0 auto 0 0;border-radius:999px;width:0%;background:linear-gradient(90deg,var(--accent-2),var(--accent));box-shadow:0 0 0 1px rgba(255,255,255,.18) inset,0 0 18px var(--accent-glow);transition:width .9s var(--ease-out)}
+.ritmo__marker{position:absolute;top:-3px;width:2px;height:18px;border-radius:999px;background:var(--gold);box-shadow:0 0 8px rgba(234,179,8,.5);left:0%;transition:left .9s var(--ease-out)}
+.ritmo__status{font-family:var(--f-mono);font-size:.8rem;font-weight:600}
+.ritmo__status.ok{color:var(--accent)}
+.ritmo__status.bad{color:var(--warn)}
+@media(max-width:680px){.ritmo__kpis{grid-template-columns:1fr}}
 
 /* cuota grid (view-only) */
 .cuotas__bar{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1.2rem}
@@ -306,7 +331,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260824.2001</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260824.2022</span>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
         <svg class="ico-moon" viewBox="0 0 24 24" style="display:none"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
         <svg class="ico-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8 6 18M18 6l1.8-1.8"/></svg>
@@ -345,6 +370,10 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
         <div class="field"><label>Total Objetivo</label><div class="input__wrap"><span class="pre">u$s</span><input class="input" id="inObj" type="number" min="1" step="1000" value="100000" inputmode="numeric"/></div></div>
         <div class="field"><label>Nº de Depósitos</label><input class="input" id="inNum" type="number" min="1" max="100" step="1" value="100" inputmode="numeric"/></div>
       </div>
+      <div class="cfg__row" style="grid-template-columns:1fr 1fr;align-items:end">
+        <div class="field"><label>Fecha de finalización</label><input class="input" id="inFechaFin" type="date"/></div>
+        <div class="field" style="justify-content:end"><label>Empezó el</label><span class="cfg__readonly" id="cfgFechaInicio">—</span></div>
+      </div>
       <p class="cfg__note">Las cuotas crecen de a poco: cada una vale <span class="code">k·n</span> siendo <span class="code">k = objetivo / Σ(1..n)</span>. Al recalcular se regeneran todas las cuotas como pendientes.</p>
       <div class="cfg__actions">
         <button class="btn btn--primary" id="btnRecalc"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></svg> Recalcular <span class="btn__chev"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></button>
@@ -360,6 +389,26 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
         <div class="fx__grid">
           <div class="fx__col pend"><h4><i></i> Pendientes</h4><div class="fx__val" id="fxPendUsd">u$s 0</div><div class="fx__ars" id="fxPendArs">$ 0 · ARS</div></div>
           <div class="fx__col paid"><h4><i></i> Pagadas</h4><div class="fx__val" id="fxPaidUsd">u$s 0</div><div class="fx__ars" id="fxPaidArs">$ 0 · ARS</div></div>
+        </div>
+      </div>
+    </div></article>
+
+    <!-- ritmo de ahorro (dimensión temporal) -->
+    <article class="card b-ritmo reveal" id="cardRitmo" style="display:none"><div class="card__inner">
+      <div class="card__head"><div><div class="card__title">Ritmo de ahorro</div><div class="card__hint">¿Vas en fecha o estás quedándote atrás?</div></div><span class="eyebrow" id="ritmoEstado">—</span></div>
+      <div class="ritmo">
+        <div class="ritmo__kpis">
+          <div class="ritmo__kpi"><span class="ritmo__label">Días restantes</span><span class="ritmo__val" id="rDiasRest">—</span></div>
+          <div class="ritmo__kpi"><span class="ritmo__label">Ritmo ideal</span><span class="ritmo__val" id="rRitmoIdeal">—</span><span class="ritmo__sub">1 cuota cada … días</span></div>
+          <div class="ritmo__kpi"><span class="ritmo__label">Ritmo necesario ahora</span><span class="ritmo__val" id="rRitmoAhora">—</span><span class="ritmo__sub">para llegar a tiempo</span></div>
+        </div>
+        <div class="ritmo__bar">
+          <div class="ritmo__bar-label"><span>Cuotas pagadas <b id="rProgCuotas">0%</b></span><span>Tiempo transcurrido <b id="rProgTiempo">0%</b></span></div>
+          <div class="ritmo__track">
+            <div class="ritmo__fill" id="rFillCuotas"></div>
+            <div class="ritmo__marker" id="rMarkerTiempo"></div>
+          </div>
+          <div class="ritmo__status" id="ritmoStatus">—</div>
         </div>
       </div>
     </div></article>
@@ -482,12 +531,14 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260824.2001";
+const APP_VERSION = "v.260824.2022";
 
 const state = {
   objetivo: 100000,
   numDep: 100,
   dolar: 1,
+  fechaInicio: null,   // ISO date — se setea al crear/recalcular el plan
+  fechaFin: null,      // ISO date — fecha de finalización elegida por el usuario
   cuotas: [],     // {n, monto, paid}
   historial: [],  // {tipo:"pago"|"plan", fecha, n?, rate?, montoUsd?, montoArs?, restUsd?, acumUsd?, restArs?, acumArs?, texto?}
   filter: "all",
@@ -525,12 +576,45 @@ const fmtNum = (n) => Math.round(Number(n||0)).toLocaleString("es-AR");
 const fmtDate = (iso) => { const d=new Date(iso); if(isNaN(d)) return "—";
   return d.toLocaleString("es-AR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit",hour12:false}); }
 const nowIso = () => new Date().toISOString();
+const fmtDay = (iso) => { const d=new Date(iso); if(isNaN(d)) return "—";
+  return d.toLocaleDateString("es-AR",{day:"2-digit",month:"2-digit",year:"numeric"}); }
+const todayISO = () => { const d=new Date(); d.setHours(0,0,0,0); return d.toISOString(); }
+
+/* ---- Cálculos de ritmo / dimensión temporal ---- */
+function ritmo(){
+  if (!state.fechaInicio || !state.fechaFin) return null;
+  const ini = new Date(state.fechaInicio), fin = new Date(state.fechaFin);
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  if (fin <= ini) return null;
+  const msDia = 86400000;
+  const diasTotales = Math.round((fin - ini) / msDia);
+  const diasTranscurridos = Math.max(0, Math.min(diasTotales, Math.round((hoy - ini) / msDia)));
+  const diasRestantes = Math.max(0, Math.round((fin - hoy) / msDia));
+  const pend = pendientes();
+  const pagadas = state.cuotas.filter(c=>c.paid).length;
+  const numDep = state.numDep;
+  // ritmo ideal: 1 cuota cada X días (plan original)
+  const ritmoIdeal = numDep > 0 ? diasTotales / numDep : 0;
+  // ritmo necesario ahora: con lo que queda, 1 cuota cada Y días
+  const ritmoAhora = pend.length > 0 ? diasRestantes / pend.length : 0;
+  // cuotas esperadas a hoy (proporcional al tiempo transcurrido)
+  const pctTiempo = diasTotales > 0 ? diasTranscurridos / diasTotales : 0;
+  const esperadas = Math.min(numDep, Math.floor(pctTiempo * numDep));
+  // estado de fecha
+  const rezago = esperadas - pagadas;  // >0 => atrasado
+  const enFecha = rezago <= 0;
+  // progreso temporal %
+  const progresoTiempo = Math.round(pctTiempo * 100);
+  const progresoCuotas = numDep > 0 ? Math.round((pagadas / numDep) * 100) : 0;
+  return { diasTotales, diasTranscurridos, diasRestantes, ritmoIdeal, ritmoAhora, esperadas, pagadas, rezago, enFecha, progresoTiempo, progresoCuotas, pend: pend.length };
+}
 
 /* ---- Guardar / restaurar estado (localStorage) ---- */
 function hacerBackup(silent=true){
   try{
     localStorage.setItem(STORE_KEY, JSON.stringify({
       objetivo:state.objetivo, numDep:state.numDep, dolar:state.dolar,
+      fechaInicio:state.fechaInicio, fechaFin:state.fechaFin,
       cuotas:state.cuotas, historial:state.historial, ts:Date.now()
     }));
     if(!silent) toast("Backup guardado");
@@ -544,6 +628,8 @@ function restaurarBackup(){
     state.objetivo = d.objetivo ?? state.objetivo;
     state.numDep = d.numDep ?? state.numDep;
     state.dolar = d.dolar ?? state.dolar;
+    state.fechaInicio = d.fechaInicio ?? null;
+    state.fechaFin = d.fechaFin ?? null;
     state.cuotas = Array.isArray(d.cuotas) ? d.cuotas : state.cuotas;
     state.historial = Array.isArray(d.historial) ? d.historial : state.historial;
     return true;
@@ -579,6 +665,11 @@ function recalcular(){
   const obj = Math.max(1, Number(inObj.value) || 1);
   const num = Math.max(1, Math.min(100, Math.round(Number(inNum.value) || 1)));
   state.objetivo = obj; state.numDep = num;
+  // reset de fecha de inicio a hoy (nuevo plan)
+  state.fechaInicio = todayISO();
+  // fecha de finalización (si el campo tiene valor)
+  const fin = document.getElementById('inFechaFin');
+  state.fechaFin = (fin && fin.value) ? new Date(fin.value + 'T12:00:00').toISOString() : null;
   // separador en el historial que marca el cambio de plan
   state.historial.push({
     tipo:"plan", fecha: nowIso(), objetivo: obj, numDep: num,
@@ -621,9 +712,41 @@ function render(){
   fxPaidUsd.textContent=fmtUsd(ahorrado); fxPaidArs.textContent=fmtArs(ars(ahorrado));
   renderCuotas();
   renderHistorial();
+  renderRitmo();
   // si el modal de pago está abierto, refrescar la checklist (montos en pesos) y los totales
   if (modalPagar && modalPagar.classList.contains("show")){ renderChecklist(); actualizarTotalesModal(); }
   if (state.cuotas.length>0 && pend.length===0) celebrate.classList.add("show"); else celebrate.classList.remove("show");
+}
+
+/* ---- Render de ritmo / dimensión temporal ---- */
+function renderRitmo(){
+  const card = document.getElementById('cardRitmo');
+  const r = ritmo();
+  if (!r){ card.style.display='none'; return; }
+  card.style.display='';
+  // fecha inicio en config
+  const elIni = document.getElementById('cfgFechaInicio');
+  if (elIni) elIni.textContent = fmtDay(state.fechaInicio);
+  // KPIs
+  document.getElementById('rDiasRest').textContent = r.diasRestantes + ' días';
+  document.getElementById('rRitmoIdeal').textContent = r.ritmoIdeal.toFixed(1) + ' días';
+  document.getElementById('rRitmoAhora').textContent = r.ritmoAhora>0 ? (r.ritmoAhora.toFixed(1)+' días') : '—';
+  // barras
+  document.getElementById('rProgCuotas').textContent = r.progresoCuotas + '%';
+  document.getElementById('rProgTiempo').textContent = r.progresoTiempo + '%';
+  document.getElementById('rFillCuotas').style.width = r.progresoCuotas + '%';
+  document.getElementById('rMarkerTiempo').style.left = r.progresoTiempo + '%';
+  // estado
+  const st = document.getElementById('ritmoEstado'), ss = document.getElementById('ritmoStatus');
+  if (r.enFecha){
+    st.textContent = 'En fecha ✓'; st.style.color = 'var(--accent)';
+    ss.textContent = 'Vas en fecha: tus cuotas pagadas van al compás del calendario. 🟢';
+    ss.className = 'ritmo__status ok';
+  } else {
+    st.textContent = 'Atrasado ⚠'; st.style.color = 'var(--warn)';
+    ss.textContent = `Estás ${r.rezago} cuota(s) detrás del ritmo ideal. 🔴 Tenés que pagar 1 cada ${r.ritmoAhora.toFixed(1)} días para llegar a tiempo.`;
+    ss.className = 'ritmo__status bad';
+  }
 }
 
 function renderCuotas(){
@@ -838,6 +961,13 @@ $("btnRateConfirm").addEventListener("click", confirmarRate);
 $("btnRateCancel").addEventListener("click", cancelarRate);
 subRateDolar.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); confirmarRate(); } });
 inDolar.addEventListener("input", ()=>{ state.dolar=Math.max(0,Number(inDolar.value)||0); hacerBackup(); render(); });
+// fecha de finalización: actualizar al cambiar sin recalcular el plan
+const inFechaFin = document.getElementById('inFechaFin');
+if (inFechaFin) inFechaFin.addEventListener("change", ()=>{
+  state.fechaFin = inFechaFin.value ? new Date(inFechaFin.value + 'T12:00:00').toISOString() : null;
+  hacerBackup(); render();
+  toast(state.fechaFin ? "Fecha de finalización guardada" : "Fecha de finalización quitada");
+});
 modalPagar.addEventListener("click", e=>{ if(e.target===modalPagar) cerrarPagar(); });
 modalConfirm.addEventListener("click", e=>{ if(e.target===modalConfirm) modalConfirm.classList.remove("show"); });
 modalRate.addEventListener("click", e=>{ if(e.target===modalRate) cancelarRate(); });
@@ -846,6 +976,13 @@ document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ cancelarRate(); 
 // cargar: restaurar el progreso guardado, o arrancar con un plan de ejemplo
 const had = restaurarBackup();
 inObj.value = state.objetivo; inNum.value = state.numDep; inDolar.value = state.dolar;
+// cargar fecha de finalización en el campo (si existe)
+(function(){
+  const f = document.getElementById('inFechaFin');
+  if (f && state.fechaFin){ const d=new Date(state.fechaFin); f.value = d.toISOString().slice(0,10); }
+  // si no hay fecha de inicio, setear hoy por defecto
+  if (!state.fechaInicio) state.fechaInicio = todayISO();
+})();
 if (!had || !state.cuotas.length){
   state.cuotas = resetear(state.objetivo, state.numDep);
   // ejemplo inicial: una cuota ya pagada para mostrar cómo se ve el historial
