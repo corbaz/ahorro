@@ -118,6 +118,36 @@ Usá **Exportar JSON** para respaldar y **Importar JSON** para restaurar en otra
 - ✅ Recalcular con confirmación + separador "NUEVO PLAN".
 - ✅ Backup automático + restauración al recargar + export/import JSON.
 - ✅ Modales abren/cierran (click, Esc, click-fuera); 0 errores de consola.
+- ✅ **Login con Google + sync en la nube** (Supabase) — cada usuario ve solo sus datos (RLS).
+
+## Login y sync en la nube (Supabase)
+
+La app funciona **sin cuenta** (modo local, `localStorage`). Para guardar el progreso en la nube y verlo desde cualquier dispositivo:
+
+### Setup (una sola vez)
+
+1. Creá un proyecto free en [supabase.com](https://supabase.com) → obtené **Project URL** y **anon key**
+2. Copialos en `supabase/config.json`:
+   ```json
+   { "projectUrl": "https://xxxxx.supabase.co", "anonKey": "eyJxxxxx" }
+   ```
+3. Corré la migración de la base de datos:
+   ```bash
+   supabase db push    # o pegá supabase/migrations/0001_init.sql en el SQL Editor
+   ```
+4. Configurá **Google OAuth** en Supabase Dashboard → Authentication → Providers → Google
+   (necesitás un OAuth Client ID de Google Cloud Console — [guía](https://supabase.com/docs/guides/auth/social-login/auth-google))
+
+### Cómo funciona
+
+- Al hacer click en **Ingresar** → se abre el overlay → **Ingresar con Google**
+- Cada usuario logueado ve **solo sus propios datos** (Row Level Security en Postgres)
+- Los pagos y recálculos se sincronizan a la nube automáticamente
+- Al abrir desde otro dispositivo, tu progreso se descarga solo
+
+### Sin cuenta
+
+Si no configurás Supabase, la app sigue funcionando en modo local (todo en `localStorage`). El botón "Ingresar" no aparece hasta que `supabase/config.json` tenga valores reales.
 
 ## Próximos pasos
 

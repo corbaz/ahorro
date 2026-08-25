@@ -84,6 +84,14 @@ El repo está conectado a **Vercel** con auto-deploy por Git: cada push a `maste
 
 Al cambiar el schema del estado, subí la versión de la clave (`/v3`) para no mezclar datos viejos.
 
+## Supabase (login + sync nube)
+
+- **Migración SQL**: `supabase/migrations/0001_init.sql` — tablas `planes`, `cuotas`, `historial` + RLS (`auth.uid() = user_id`)
+- **SDK JS**: `supabase-sync.js` — carga `@supabase/supabase-js` UMD por CDN, login Google, sync por usuario
+- **Config local**: `supabase/config.json` (NO se versiona, está en .gitignore) — `{projectUrl, anonKey}`
+- Si `config.json` tiene valores placeholder (`XXXXX`), la app queda en modo local (sin login)
+- `syncToCloud()` se llama tras cada cambio de estado (pago, recálculo, import) si hay sesión
+
 ## Próximos pasos sugeridos
 
 - Export del historial a CSV (para re-abrirlo en Excel).

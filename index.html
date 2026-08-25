@@ -8,6 +8,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<!-- Supabase JS SDK (UMD CDN — sin build) + módulo de sincronización -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-sync.js"></script>
 <style>
 /* ============================================================
    RETO DE AHORRO · DASHBOARD
@@ -330,6 +333,19 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
 .toast.show{transform:translateY(0);opacity:1}
 .toast svg{width:15px;height:15px;stroke:var(--accent);stroke-width:1.8;fill:none}
 
+/* auth / login */
+.nav__user{display:inline-flex;align-items:center;gap:.5rem;font-size:.78rem;font-weight:600;color:var(--txt-2);padding:.35rem .7rem;border-radius:999px;background:var(--surface-2);border:1px solid var(--hairline)}
+.nav__user .avatar{width:1.4rem;height:1.4rem;border-radius:50%;flex:none;object-fit:cover}
+.btn--google{display:inline-flex;align-items:center;gap:.6rem;background:#fff;color:#1f1f1f;border-color:#fff;font-weight:600}
+.btn--google svg{width:18px;height:18px;fill:none}
+.auth-overlay{position:fixed;inset:0;z-index:60;display:none;place-items:center;padding:1rem;background:var(--modal-overlay);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.auth-overlay.show{display:grid;animation:fadein .4s var(--ease)}
+.auth-card{width:min(380px,100%);border-radius:var(--radius);padding:.6rem;background:var(--shell);border:1px solid var(--hairline);box-shadow:0 40px 90px -40px rgba(0,0,0,.95);text-align:center}
+.auth-card__inner{padding:clamp(1.6rem,5vw,2.4rem);border-radius:calc(var(--radius) - .6rem);background:linear-gradient(170deg,rgba(255,255,255,.04),rgba(255,255,255,.012) 40%,transparent)}
+.auth-card h2{font-size:1.3rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:.4rem}
+.auth-card p{color:var(--txt-2);font-size:.86rem;margin-bottom:1.6rem}
+.auth-card .auth-note{font-size:.72rem;color:var(--txt-3);margin-top:1rem}
+
 /* reveal */
 .reveal{opacity:0;transform:translateY(2rem);transition:opacity .8s var(--ease-out),transform .8s var(--ease-out)}
 .reveal.in{opacity:1;transform:translateY(0)}
@@ -353,7 +369,9 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260824.2153</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260825.0725</span>
+      <span class="nav__user" id="navUser" style="display:none"></span>
+      <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
         <svg class="ico-moon" viewBox="0 0 24 24" style="display:none"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
         <svg class="ico-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8 6 18M18 6l1.8-1.8"/></svg>
@@ -491,6 +509,21 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
   <p class="foot">Reto de Ahorro · seguí tu plan de ahorro cuota por cuota.</p>
 </div>
 
+<!-- AUTH: overlay de login (Gmail) -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-card"><div class="auth-card__inner">
+    <div class="nav__logo" style="margin:0 auto 1.2rem;width:48px;height:48px;border-radius:16px"><svg viewBox="0 0 24 24" style="width:24px;height:24px"><path d="M12 2v20M17 5.5C14 4 9.5 4.2 7 6.4 4.6 8.5 5 12 8 13.2c2 .8 4 .8 6 .2M7 18.5c2.5 1.6 7 1.6 9-.3 2.3-2.1 1.9-5.6-1.1-6.8" stroke="#050506" stroke-width="1.6" fill="none"/></svg></div>
+    <h2>Reto de Ahorro</h2>
+    <p>Ingresá para guardar tu progreso en la nube y verlo desde cualquier dispositivo.</p>
+    <button class="btn btn--google" id="btnGoogleLogin" style="width:100%;justify-content:center">
+      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.5 12.2c0-.7-.1-1.4-.2-2H12v4h5.9c-.3 1.3-1 2.4-2.2 3.1v2.6h3.5c2-1.9 3.3-4.7 3.3-7.7z"/><path fill="#34A853" d="M12 23c2.9 0 5.4-1 7.2-2.6l-3.5-2.7c-1 .7-2.2 1-3.7 1-2.9 0-5.3-1.9-6.2-4.6H2.2v2.8C4 20.1 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.8 14.7c-.2-.7-.4-1.5-.4-2.2s.1-1.5.4-2.2V9.5H2.2C1.4 11 1 12.5 1 14.5s.4 3.5 1.2 5l3.6-2.8z"/><path fill="#EA4335" d="M12 5.6c1.6 0 3 .5 4.1 1.6l3-3C17 2.5 14.7 1.5 12 1.5 7.7 1.5 4 4.4 2.6 8.5l3.6 2.8c.9-2.7 3.3-4.6 6.2-4.6z"/></svg>
+      Ingresar con Google
+    </button>
+    <p class="auth-note">Si saltás esto, tu progreso se guarda solo en este navegador.</p>
+    <button class="btn btn--ghost" id="btnAuthClose" style="margin-top:.8rem;width:100%;justify-content:center">Seguir sin cuenta</button>
+  </div></div>
+</div>
+
 <!-- MODAL: Pagar cuotas -->
 <div class="modal" id="modalPagar" role="dialog" aria-modal="true" aria-label="Pagar cuotas">
   <div class="modal__card"><div class="modal__inner">
@@ -571,7 +604,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260824.2153";
+const APP_VERSION = "v.260825.0725";
 
 const state = {
   objetivo: 100000,
@@ -687,6 +720,13 @@ function restaurarBackup(){
   }catch(e){ return false; }
 }
 
+/* ---- Sincronizar a la nube (Supabase) si hay sesión ---- */
+function syncToCloud(){
+  if (window.SupaSync && window.SupaSync.isReady() && window.SupaSync.isLoggedIn()){
+    window.SupaSync.uploadState(state).catch(e=>console.error('syncToCloud:', e.message));
+  }
+}
+
 /* ---- Registrar pagos en el historial ----
    Por cada cuota tildada: la marca pagada, recalcula restante/acumulado después,
    y agrega una fila con los montos en dólares y pesos. */
@@ -727,7 +767,7 @@ function recalcular(){
     texto: `--- NUEVO PLAN: objetivo u$s ${fmtNum(obj)}  |  ${num} cuotas  |  ${fmtDate(nowIso())} ---`
   });
   state.cuotas = resetear(obj, num);   // regenera TODAS las cuotas (pendientes)
-  hacerBackup();
+  hacerBackup(); syncToCloud();
   render();
   toast("Plan recalculado y registrado en el historial");
 }
@@ -1046,7 +1086,7 @@ function comprar(){
   if (state._sel.size===0){ toast("Tildá al menos una cuota.", true); return; }
   const ns = [...state._sel];
   registrarPagos(ns);
-  hacerBackup();
+  hacerBackup(); syncToCloud();
   render();
   toast(`${ns.length} cuota(s) pagada(s) · registradas en el historial`);
   if (pendientes().length===0){ cerrarPagar(); celebrate.classList.add("show"); return; }
@@ -1070,7 +1110,7 @@ function importar(file){ const r=new FileReader(); r.onload=()=>{ try{
   if(Array.isArray(d.cuotas)) state.cuotas=d.cuotas.map(c=>({n:+c.n,monto:+c.monto,paid:!!c.paid}));
   if(Array.isArray(d.historial)) state.historial=d.historial;
   inObj.value=state.objetivo; inNum.value=state.numDep; inDolar.value=state.dolar;
-  hacerBackup(); render(); toast("Respaldo importado");
+  hacerBackup(); syncToCloud(); render(); toast("Respaldo importado");
 }catch(e){ toast("Archivo inválido", true);} }; r.readAsText(file); }
 
 /* ---- toast ---- */
@@ -1088,6 +1128,54 @@ const modalRate=$("modalRate"),subRateDolar=$("subRateDolar");
 const navVer=$("navVer");
 // estampar la versión en el badge (arriba a la derecha)
 navVer.textContent = APP_VERSION;
+
+/* ---- Supabase auth + sync ---- */
+// Cargar config de Supabase (fetch a config.json si no está incrustada)
+(async function initSupabase(){
+  if (!window.SupaSync) return;
+  let cfg = window.__SUPABASE_CFG__;
+  if (!cfg){
+    try{ const r = await fetch('supabase/config.json'); if(r.ok) cfg = await r.json(); }catch(e){}
+  }
+  if (!cfg){ console.info('[supabase] sin configurar — la app sigue en modo local'); return; }
+  window.SupaSync.init(cfg.projectUrl, cfg.anonKey);
+  // UI: botones de login/logout
+  const btnLogin=$("btnLogin"), navUser=$("navUser"), overlay=$("authOverlay");
+  const btnGoogle=$("btnGoogleLogin"), btnAuthClose=$("btnAuthClose");
+  function showUser(u){
+    if (u){
+      navUser.style.display='inline-flex';
+      const name = u.user_metadata?.full_name || u.email?.split('@')[0] || 'Yo';
+      const pic = u.user_metadata?.avatar_url || '';
+      navUser.innerHTML = (pic?`<img class="avatar" src="${pic}" alt=""/>`:'') + escapeHtml(name);
+      btnLogin.textContent='Salir'; btnLogin.title='Cerrar sesión';
+    } else {
+      navUser.style.display='none'; navUser.innerHTML='';
+      btnLogin.textContent='Ingresar'; btnLogin.title='';
+    }
+  }
+  // escuchar cambios de sesión
+  window.addEventListener('auth-change', (e)=> showUser(e.detail.user));
+  btnLogin.addEventListener("click", ()=>{
+    if (window.SupaSync.isLoggedIn()){ window.SupaSync.logout(); }
+    else { overlay.classList.add('show'); }
+  });
+  btnAuthClose.addEventListener("click", ()=> overlay.classList.remove('show'));
+  btnGoogle.addEventListener("click", ()=>{ overlay.classList.remove('show'); window.SupaSync.loginGoogle(); });
+  overlay.addEventListener("click", e=>{ if(e.target===overlay) overlay.classList.remove('show'); });
+  // al loguearse: bajar sus datos de la nube; al desloguarse: backup local
+  window.addEventListener('auth-change', async (e)=>{
+    const u = e.detail.user;
+    if (u){
+      toast('Sesión iniciada · cargando tu progreso…');
+      const cloud = await window.SupaSync.downloadState();
+      if (cloud && cloud.cuotas?.length){ Object.assign(state, cloud); hacerBackup(); render(); toast('Progreso cargado desde la nube'); }
+      else { toast('No tenés datos guardados aún — arrancá tu plan'); }
+    } else {
+      toast('Sesión cerrada · modo local');
+    }
+  });
+})();
 
 // tema claro/oscuro (persistente)
 function applyTheme(t){
