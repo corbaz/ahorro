@@ -168,7 +168,7 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 /* config readonly (fecha inicio) */
 .cfg__readonly{font-family:var(--f-mono);font-size:1rem;font-weight:600;color:var(--txt-2);padding:.5rem 0}
 /* input date */
-.input[type=date]{font-family:var(--f-display;font-weight:600;color-scheme:dark}
+.input[type=date]{font-family:var(--f-display);font-weight:600;color-scheme:dark}
 [data-theme="light"] .input[type=date]{color-scheme:light}
 
 /* ritmo de ahorro */
@@ -332,7 +332,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260824.2118</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260824.2120</span>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
         <svg class="ico-moon" viewBox="0 0 24 24" style="display:none"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
         <svg class="ico-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8 6 18M18 6l1.8-1.8"/></svg>
@@ -532,7 +532,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260824.2118";
+const APP_VERSION = "v.260824.2120";
 
 const state = {
   objetivo: 100000,
