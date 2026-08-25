@@ -173,11 +173,13 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 
 /* ritmo de ahorro */
 .ritmo{display:flex;flex-direction:column;gap:1.4rem}
-.ritmo__kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem}
-.ritmo__kpi{border-radius:1rem;padding:1rem 1.1rem;background:var(--inset-bg);border:1px solid var(--hairline);display:flex;flex-direction:column;gap:.3rem}
-.ritmo__label{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--txt-3);font-weight:600}
-.ritmo__val{font-family:var(--f-mono);font-size:1.5rem;font-weight:600;letter-spacing:-0.02em;color:var(--txt)}
-.ritmo__sub{font-size:.68rem;color:var(--txt-3);font-weight:500}
+.ritmo__kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:.7rem}
+.ritmo__kpi{border-radius:1rem;padding:.9rem 1rem;background:var(--inset-bg);border:1px solid var(--hairline);display:flex;flex-direction:column;gap:.25rem}
+.ritmo__label{font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;color:var(--txt-3);font-weight:600}
+.ritmo__val{font-family:var(--f-mono);font-size:1.3rem;font-weight:600;letter-spacing:-0.02em;color:var(--txt)}
+.ritmo__val.ok{color:var(--accent)}
+.ritmo__val.bad{color:var(--warn)}
+.ritmo__sub{font-size:.64rem;color:var(--txt-3);font-weight:500}
 .ritmo__bar{display:flex;flex-direction:column;gap:.6rem}
 .ritmo__bar-label{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:.7rem;color:var(--txt-3);font-weight:500}
 .ritmo__bar-label b{color:var(--txt-2)}
@@ -187,7 +189,26 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 .ritmo__status{font-family:var(--f-mono);font-size:.8rem;font-weight:600}
 .ritmo__status.ok{color:var(--accent)}
 .ritmo__status.bad{color:var(--warn)}
-@media(max-width:680px){.ritmo__kpis{grid-template-columns:1fr}}
+.ritmo__chart{background:var(--inset-bg);border:1px solid var(--hairline);border-radius:1rem;padding:1rem;min-height:120px}
+.ritmo__chart svg{width:100%;height:auto;display:block;overflow:visible}
+@media(max-width:680px){.ritmo__kpis{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:440px){.ritmo__kpis{grid-template-columns:1fr}}
+
+/* modal cadencia */
+.cadencia{display:flex;flex-direction:column;gap:1.3rem}
+.cadencia__kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:.7rem}
+.cadencia__kpi{border-radius:1rem;padding:.85rem 1rem;background:var(--inset-bg);border:1px solid var(--hairline);display:flex;flex-direction:column;gap:.25rem}
+.cadencia__kpi .ritmo__label{font-size:.58rem}
+.cadencia__kpi .ritmo__val{font-size:1.15rem}
+.cadencia__chart{background:var(--inset-bg);border:1px solid var(--hairline);border-radius:1rem;padding:1rem}
+.cadencia__chart svg{width:100%;height:auto;display:block;overflow:visible}
+.cadencia__alert{border-radius:1rem;padding:.9rem 1.1rem;border:1px solid var(--hairline);font-size:.84rem;font-weight:500;display:flex;align-items:center;gap:.6rem}
+.cadencia__alert.ok{background:rgba(52,211,153,.08);border-color:rgba(52,211,153,.3);color:var(--accent)}
+.cadencia__alert.bad{background:rgba(251,113,133,.08);border-color:rgba(251,113,133,.3);color:var(--warn)}
+.cadencia__alert svg{width:18px;height:18px;stroke:currentColor;stroke-width:1.8;fill:none;flex:none}
+.cadencia__row{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;font-size:.82rem}
+.cadencia__row b{font-family:var(--f-mono);font-weight:600}
+@media(max-width:680px){.cadencia__kpis{grid-template-columns:repeat(2,1fr)}}
 
 /* cuota grid (view-only) */
 .cuotas__bar{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1.2rem}
@@ -332,7 +353,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260824.2120</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260824.2153</span>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
         <svg class="ico-moon" viewBox="0 0 24 24" style="display:none"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
         <svg class="ico-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8 6 18M18 6l1.8-1.8"/></svg>
@@ -402,6 +423,8 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
           <div class="ritmo__kpi"><span class="ritmo__label">Días restantes</span><span class="ritmo__val" id="rDiasRest">—</span></div>
           <div class="ritmo__kpi"><span class="ritmo__label">Ritmo ideal</span><span class="ritmo__val" id="rRitmoIdeal">—</span><span class="ritmo__sub">1 cuota cada … días</span></div>
           <div class="ritmo__kpi"><span class="ritmo__label">Ritmo necesario ahora</span><span class="ritmo__val" id="rRitmoAhora">—</span><span class="ritmo__sub">para llegar a tiempo</span></div>
+          <div class="ritmo__kpi"><span class="ritmo__label">Ritmo real</span><span class="ritmo__val" id="rRitmoReal">—</span><span class="ritmo__sub">promedio real por cuota</span></div>
+          <div class="ritmo__kpi"><span class="ritmo__label">Balance</span><span class="ritmo__val" id="rBalance">—</span><span class="ritmo__sub" id="rBalanceSub">—</span></div>
         </div>
         <div class="ritmo__bar">
           <div class="ritmo__bar-label"><span>Cuotas pagadas <b id="rProgCuotas">0%</b></span><span>Tiempo transcurrido <b id="rProgTiempo">0%</b></span></div>
@@ -411,6 +434,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
           </div>
           <div class="ritmo__status" id="ritmoStatus">—</div>
         </div>
+        <div class="ritmo__chart" id="ritmoChart"></div>
       </div>
     </div></article>
 
@@ -419,7 +443,10 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
       <div class="card__head"><div><div class="card__title">Cuotas del desafío</div><div class="card__hint">Tildá las cuotas que pagaste para marcarlas como pagadas</div></div>
         <div class="cuotas__bar">
           <div class="cuotas__filters" id="filters"><button class="chip is-active" data-f="all">Todas</button><button class="chip" data-f="pend">Pendientes</button><button class="chip" data-f="paid">Pagadas</button></div>
-          <button class="btn btn--primary" id="btnPagar"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-10"/></svg> Pagar cuotas</button>
+          <div style="display:flex;gap:.5rem">
+            <button class="btn btn--ghost" id="btnCadencia"><svg viewBox="0 0 24 24"><path d="M3 17l5-5 4 4 8-8M14 6h7v7"/></svg> Cadencia</button>
+            <button class="btn btn--primary" id="btnPagar"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-10"/></svg> Pagar cuotas</button>
+          </div>
         </div>
       </div>
       <div class="grid-cuotas" id="cuotaGrid"></div>
@@ -515,6 +542,18 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
   </div></div>
 </div>
 
+<!-- MODAL: Cadencia detallada -->
+<div class="modal" id="modalCadencia" role="dialog" aria-modal="true" aria-label="Cadencia detallada">
+  <div class="modal__card" style="width:min(820px,100%)"><div class="modal__inner">
+    <div class="modal__head">
+      <div><div class="modal__title">Cadencia del reto</div><div class="modal__sub">Estimación de llegada y ritmo necesario</div></div>
+      <button class="btn btn--icon btn--ghost" id="btnCloseCadencia"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="modal__body" id="cadenciaBody"></div>
+    <div class="modal__foot"><button class="btn btn--ghost" id="btnCerrarCadencia">Cerrar</button></div>
+  </div></div>
+</div>
+
 <!-- celebration -->
 <div class="celebrate" id="celebrate"><div class="celebrate__card"><div class="celebrate__inner">
   <div class="celebrate__badge"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-10"/></svg></div>
@@ -532,7 +571,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260824.2120";
+const APP_VERSION = "v.260824.2153";
 
 const state = {
   objetivo: 100000,
@@ -607,7 +646,18 @@ function ritmo(){
   // progreso temporal %
   const progresoTiempo = Math.round(pctTiempo * 100);
   const progresoCuotas = numDep > 0 ? Math.round((pagadas / numDep) * 100) : 0;
-  return { diasTotales, diasTranscurridos, diasRestantes, ritmoIdeal, ritmoAhora, esperadas, pagadas, rezago, enFecha, progresoTiempo, progresoCuotas, pend: pend.length };
+  // ritmo real: cada cuota pagada tomó (en promedio) diasTranscurridos / pagadas
+  const ritmoReal = pagadas > 0 ? diasTranscurridos / pagadas : 0;
+  // balance: cuotas de adelanto (positivo) o de atraso (negativo)
+  const balance = pagadas - esperadas;
+  // fecha estimada de llegada al ritmo actual
+  const restantesAlRitmoReal = pend.length * ritmoReal;
+  const fechaEstimada = new Date(hoy.getTime() + restantesAlRitmoReal * msDia);
+  // ¿debe acelerar? si el ritmo real > ritmo necesario ahora
+  const debeAcelerar = ritmoReal > ritmoAhora && pend.length > 0;
+  // diferencia de ritmo (cuánto más rápido debe pagar)
+  const acelerarPct = (ritmoAhora > 0 && ritmoReal > 0) ? Math.round((1 - ritmoAhora / ritmoReal) * 100) : 0;
+  return { diasTotales, diasTranscurridos, diasRestantes, ritmoIdeal, ritmoAhora, ritmoReal, esperadas, pagadas, rezago, balance, enFecha, progresoTiempo, progresoCuotas, pend: pend.length, fechaEstimada, debeAcelerar, acelerarPct };
 }
 
 /* ---- Guardar / restaurar estado (localStorage) ---- */
@@ -725,13 +775,25 @@ function renderRitmo(){
   const r = ritmo();
   if (!r){ card.style.display='none'; return; }
   card.style.display='';
-  // fecha inicio en config
   const elIni = document.getElementById('cfgFechaInicio');
   if (elIni) elIni.textContent = fmtDay(state.fechaInicio);
   // KPIs
   document.getElementById('rDiasRest').textContent = r.diasRestantes + ' días';
   document.getElementById('rRitmoIdeal').textContent = r.ritmoIdeal.toFixed(1) + ' días';
   document.getElementById('rRitmoAhora').textContent = r.ritmoAhora>0 ? (r.ritmoAhora.toFixed(1)+' días') : '—';
+  document.getElementById('rRitmoReal').textContent = r.pagadas>0 ? (r.ritmoReal.toFixed(1)+' días') : '—';
+  // balance con color
+  const elBal = document.getElementById('rBalance'), elBalSub = document.getElementById('rBalanceSub');
+  if (r.balance > 0){
+    elBal.textContent = '+' + r.balance; elBal.className = 'ritmo__val ok';
+    elBalSub.textContent = 'cuotas adelantadas 🟢';
+  } else if (r.balance < 0){
+    elBal.textContent = r.balance; elBal.className = 'ritmo__val bad';
+    elBalSub.textContent = 'cuotas atrasadas 🔴';
+  } else {
+    elBal.textContent = '0'; elBal.className = 'ritmo__val';
+    elBalSub.textContent = 'justo en fecha';
+  }
   // barras
   document.getElementById('rProgCuotas').textContent = r.progresoCuotas + '%';
   document.getElementById('rProgTiempo').textContent = r.progresoTiempo + '%';
@@ -741,13 +803,124 @@ function renderRitmo(){
   const st = document.getElementById('ritmoEstado'), ss = document.getElementById('ritmoStatus');
   if (r.enFecha){
     st.textContent = 'En fecha ✓'; st.style.color = 'var(--accent)';
-    ss.textContent = 'Vas en fecha: tus cuotas pagadas van al compás del calendario. 🟢';
+    const extra = r.balance>0 ? ` Vas con ${r.balance} cuota(s) de adelanto.` : '';
+    ss.textContent = `Vas en fecha: tus cuotas pagadas van al compás del calendario. 🟢${extra}`;
     ss.className = 'ritmo__status ok';
   } else {
     st.textContent = 'Atrasado ⚠'; st.style.color = 'var(--warn)';
     ss.textContent = `Estás ${r.rezago} cuota(s) detrás del ritmo ideal. 🔴 Tenés que pagar 1 cada ${r.ritmoAhora.toFixed(1)} días para llegar a tiempo.`;
     ss.className = 'ritmo__status bad';
   }
+  // gráfico de ritmo
+  document.getElementById('ritmoChart').innerHTML = chartRitmo(r);
+}
+
+/* ---- SVG gráfico de ritmo (ideal vs real vs necesario) ---- */
+function chartRitmo(r){
+  const W=560,H=130, pad=34;
+  const maxV = Math.max(r.ritmoIdeal, r.ritmoReal, r.ritmoAhora, 1) * 1.25;
+  const sc = (v) => H - pad - (v / maxV) * (H - pad*2);
+  const xIdeal = pad, xReal = pad + (W-pad*2)/3, xNecesario = pad + (W-pad*2)*2/3, xHoy = W - pad;
+  // línea de tiempo (progreso)
+  const pctT = r.progresoTiempo/100, pctC = r.progresoCuotas/100;
+  const yT = H - pad - pctT*(H-pad*2), yC = H - pad - pctC*(H-pad*2);
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico de ritmo">
+    <defs><linearGradient id="gOk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--accent)"/><stop offset="1" stop-color="var(--accent-2)"/></linearGradient></defs>
+    <!-- ejes -->
+    <line x1="${pad}" y1="${H-pad}" x2="${W-pad}" y2="${H-pad}" stroke="var(--hairline)" stroke-width="1"/>
+    <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${H-pad}" stroke="var(--hairline)" stroke-width="1"/>
+    <!-- barras de ritmo -->
+    ${barraRitmo(xIdeal, sc(r.ritmoIdeal), 'Ideal', r.ritmoIdeal.toFixed(1))}
+    ${barraRitmo(xReal, sc(r.ritmoReal), 'Real', r.ritmoReal.toFixed(1), r.ritmoReal<=r.ritmoIdeal?'var(--accent)':'var(--warn)')}
+    ${barraRitmo(xNecesario, sc(r.ritmoAhora), 'Necesario', r.ritmoAhora.toFixed(1), r.debeAcelerar?'var(--warn)':'var(--accent)')}
+    <!-- línea de progreso cuotas vs tiempo -->
+    <line x1="${pad}" y1="${yC}" x2="${W-pad}" y2="${yT}" stroke="var(--gold)" stroke-width="2" stroke-dasharray="4 3" opacity=".7"/>
+    <circle cx="${pad}" cy="${yC}" r="3" fill="var(--accent)"/>
+    <circle cx="${W-pad}" cy="${yT}" r="3" fill="var(--gold)"/>
+    <text x="${pad+6}" y="${yC-5}" fill="var(--accent)" font-family="var(--f-mono)" font-size="10">Cuotas ${r.progresoCuotas}%</text>
+    <text x="${W-pad-50}" y="${yT-5}" fill="var(--gold)" font-family="var(--f-mono)" font-size="10">Tiempo ${r.progresoTiempo}%</text>
+  </svg>`;
+}
+function barraRitmo(x, y, label, val, color){
+  color = color || 'var(--accent)';
+  const top = y, h = 120 - y - 14;
+  return `<rect x="${x-16}" y="${y}" width="32" height="${Math.max(0,h)}" rx="6" fill="${color}" opacity=".85"/>
+    <text x="${x}" y="${130-4}" text-anchor="middle" fill="var(--txt-3)" font-family="var(--f-display)" font-size="10" font-weight="600">${label}</text>
+    <text x="${x}" y="${y-6}" text-anchor="middle" fill="${color}" font-family="var(--f-mono)" font-size="11" font-weight="600">${val}d</text>`;
+}
+
+/* ---- Modal Cadencia detallada ---- */
+function abrirCadencia(){
+  const r = ritmo();
+  const body = document.getElementById('cadenciaBody');
+  if (!r){
+    body.innerHTML = '<div class="cadencia__alert bad"><svg viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg> Seteá una fecha de finalización en Configuración para ver la cadencia detallada.</div>';
+  } else {
+    const alerta = r.debeAcelerar
+      ? `<div class="cadencia__alert bad"><svg viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg> Debés acelerar: tu ritmo real (${r.ritmoReal.toFixed(1)}d/cuota) es más lento del necesario (${r.ritmoAhora.toFixed(1)}d/cuota). Pagá ${r.acelerarPct}% más rápido.</div>`
+      : `<div class="cadencia__alert ok"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-10"/></svg> Vas bien: tu ritmo real (${r.ritmoReal.toFixed(1)}d/cuota) es igual o más rápido de lo necesario. 🟢</div>`;
+    body.innerHTML = `
+      <div class="cadencia">
+        <div class="cadencia__kpis">
+          <div class="cadencia__kpi"><span class="ritmo__label">Cuotas pagadas</span><span class="ritmo__val ok">${r.pagadas} / ${state.numDep}</span></div>
+          <div class="cadencia__kpi"><span class="ritmo__label">Cuotas esperadas a hoy</span><span class="ritmo__val">${r.esperadas}</span></div>
+          <div class="cadencia__kpi"><span class="ritmo__label">Ritmo real</span><span class="ritmo__val">${r.ritmoReal.toFixed(1)}d</span></div>
+          <div class="cadencia__kpi"><span class="ritmo__label">Estimado de llegada</span><span class="ritmo__val" style="font-size:.95rem">${fmtDay(r.fechaEstimada.toISOString())}</span></div>
+        </div>
+        <div class="cadencia__chart">${chartCadencia(r)}</div>
+        <div class="cadencia__row"><span>Inicio del reto</span><b>${fmtDay(state.fechaInicio)}</b></div>
+        <div class="cadencia__row"><span>Fecha objetivo</span><b>${fmtDay(state.fechaFin)}</b></div>
+        <div class="cadencia__row"><span>Días transcurridos / totales</span><b>${r.diasTranscurridos} / ${r.diasTotales} días</b></div>
+        <div class="cadencia__row"><span>Días restantes</span><b>${r.diasRestantes} días</b></div>
+        <div class="cadencia__row"><span>Cuotas pendientes</span><b>${r.pend}</b></div>
+        ${alerta}
+      </div>`;
+  }
+  document.getElementById('modalCadencia').classList.add('show');
+}
+function cerrarCadencia(){ document.getElementById('modalCadencia').classList.remove('show'); }
+
+/* ---- SVG gráfico de cadencia (proyecta llegada) ---- */
+function chartCadencia(r){
+  const W=740,H=180,pad=36;
+  const ini=new Date(state.fechaInicio), fin=new Date(state.fechaFin), hoy=new Date(); hoy.setHours(0,0,0,0);
+  const msDia=86400000;
+  const totalDias=Math.max(1,Math.round((fin-ini)/msDia));
+  const x=(fecha)=>{ const v=pad + ((new Date(fecha)-ini)/msDia)/totalDias*(W-pad*2); return Math.max(pad, Math.min(W-pad, v)); };
+  const y=(val)=> { const maxC=state.numDep; return H-pad-(val/maxC)*(H-pad*2); };
+  // línea ideal (diagonal inicio→fin)
+  // puntos: cada cuota esperada a su tiempo ideal
+  let ptsIdeal='', paso=Math.max(1,Math.floor(state.numDep/12));
+  for(let i=0;i<=state.numDep;i+=paso){ const diaIdeal=ini.getTime()+i*(totalDias/state.numDep)*msDia; ptsIdeal += `${x(new Date(diaIdeal).toISOString())},${y(i)} `; }
+  // puntos reales (pagadas acumuladas en el tiempo, usando historial)
+  const pagos=state.historial.filter(h=>h.tipo==='pago').sort((a,b)=>new Date(a.fecha)-new Date(b.fecha));
+  let acum=0, ptsReal='';
+  pagos.forEach(p=>{ acum++; ptsReal += `${x(p.fecha)},${y(acum)} `; });
+  if(pagos.length) ptsReal = `${x(pagos[0].fecha)},${y(0)} ` + ptsReal; // arrancar de 0
+  // proyección al ritmo real
+  const ritmoReal=r.ritmoReal, restPend=r.pend;
+  const diasProy=ritmoReal*restPend;
+  const finProy=new Date(hoy.getTime()+diasProy*msDia);
+  const xFinProy=Math.min(W-pad, x(finProy.toISOString()));
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Cadencia y estimación de llegada">
+    <defs><linearGradient id="gFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity=".25"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>
+    <line x1="${pad}" y1="${H-pad}" x2="${W-pad}" y2="${H-pad}" stroke="var(--hairline)"/>
+    <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${H-pad}" stroke="var(--hairline)"/>
+    <!-- área bajo línea ideal -->
+    <polygon points="${pad},${H-pad} ${ptsIdeal}${W-pad},${H-pad}" fill="url(#gFill)"/>
+    <!-- línea ideal -->
+    <polyline points="${ptsIdeal}" fill="none" stroke="var(--accent-2)" stroke-width="2" stroke-dasharray="5 4" opacity=".6"/>
+    <!-- línea real -->
+    ${ptsReal?`<polyline points="${ptsReal}" fill="none" stroke="var(--accent)" stroke-width="2.5"/>`:''}
+    <!-- proyección -->
+    ${ptsReal?(()=>{ const last=ptsReal.trim().split(' ').pop().split(',')[0]; return `<line x1="${last}" x2="${xFinProy}" y1="${y(r.pagadas)}" y2="${y(state.numDep)}" stroke="var(--gold)" stroke-width="2" stroke-dasharray="3 3" opacity=".7"/>`; })():''}
+    ${ptsReal?`<circle cx="${xFinProy}" cy="${y(state.numDep)}" r="4" fill="var(--gold)"/><text x="${xFinProy}" y="${y(state.numDep)-8}" text-anchor="middle" fill="var(--gold)" font-family="var(--f-mono)" font-size="10">Llegada ≈ ${fmtDay(finProy.toISOString())}</text>`:''}
+    <!-- marcador hoy -->
+    <line x1="${x(hoy.toISOString())}" y1="${pad}" x2="${x(hoy.toISOString())}" y2="${H-pad}" stroke="var(--txt-3)" stroke-width="1" stroke-dasharray="2 3" opacity=".5"/>
+    <text x="${x(hoy.toISOString())}" y="${pad-4}" text-anchor="middle" fill="var(--txt-3)" font-family="var(--f-mono)" font-size="9">hoy</text>
+    <text x="${pad-4}" y="${H-pad}" text-anchor="end" fill="var(--txt-3)" font-family="var(--f-mono)" font-size="9">0</text>
+    <text x="${pad-4}" y="${pad+4}" text-anchor="end" fill="var(--txt-3)" font-family="var(--f-mono)" font-size="9">${state.numDep}</text>
+  </svg>`;
 }
 
 function renderCuotas(){
@@ -956,6 +1129,9 @@ $("btnPagar").addEventListener("click", abrirSubRate);
 $("btnClosePagar").addEventListener("click", cerrarPagar);
 $("btnCerrar").addEventListener("click", cerrarPagar);
 $("btnComprar").addEventListener("click", comprar);
+$("btnCadencia").addEventListener("click", abrirCadencia);
+$("btnCloseCadencia").addEventListener("click", cerrarCadencia);
+$("btnCerrarCadencia").addEventListener("click", cerrarCadencia);
 $("btnEditRate").addEventListener("click", ()=>{ cerrarPagar(); abrirSubRate(); });
 // submodal cotización
 $("btnRateConfirm").addEventListener("click", confirmarRate);
@@ -970,9 +1146,10 @@ if (inFechaFin) inFechaFin.addEventListener("change", ()=>{
   toast(state.fechaFin ? "Fecha de finalización guardada" : "Fecha de finalización quitada");
 });
 modalPagar.addEventListener("click", e=>{ if(e.target===modalPagar) cerrarPagar(); });
+document.getElementById('modalCadencia').addEventListener("click", e=>{ if(e.target.id==='modalCadencia') cerrarCadencia(); });
 modalConfirm.addEventListener("click", e=>{ if(e.target===modalConfirm) modalConfirm.classList.remove("show"); });
 modalRate.addEventListener("click", e=>{ if(e.target===modalRate) cancelarRate(); });
-document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ cancelarRate(); cerrarPagar(); modalConfirm.classList.remove("show"); celebrate.classList.remove("show"); } });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ cancelarRate(); cerrarPagar(); cerrarCadencia(); modalConfirm.classList.remove("show"); celebrate.classList.remove("show"); } });
 
 // cargar: restaurar el progreso guardado, o arrancar con un plan de ejemplo
 const had = restaurarBackup();
