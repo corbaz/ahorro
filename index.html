@@ -111,15 +111,15 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 
 /* bento */
 .bento{display:grid;gap:clamp(.7rem,1.6vw,1.1rem);grid-template-columns:repeat(12,1fr);grid-auto-rows:minmax(0,auto)}
-.b-progress{grid-column:span 8;grid-row:span 2}
-.b-kpis{grid-column:span 4;grid-row:span 2;display:grid;grid-template-rows:subgrid;gap:clamp(.7rem,1.6vw,1.1rem)}
+.b-progress{grid-column:span 12}
+.prog__kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(.7rem,1.6vw,1.1rem);margin-top:clamp(1.2rem,2.4vw,2rem)}
 .b-config{grid-column:span 12}
 .b-fx{grid-column:span 7}
 .b-ritmo{grid-column:span 12}
 .b-grid{grid-column:span 12}
 .b-hist{grid-column:span 12}
 .b-export{grid-column:span 12}
-@media(max-width:880px){.bento>*{grid-column:span 12 !important;grid-row:auto !important;min-width:0 !important}.b-kpis{display:flex;flex-direction:column;gap:clamp(.7rem,1.6vw,1.1rem);grid-template-rows:none}}
+@media(max-width:880px){.bento>*{grid-column:span 12 !important;grid-row:auto !important;min-width:0 !important}.prog__kpis{grid-template-columns:1fr}}
 
 /* kpi */
 .kpi{border-radius:calc(var(--radius) - .6rem);padding:1.15rem 1.25rem;background:var(--surface);border:1px solid var(--hairline);display:flex;flex-direction:column;justify-content:center;gap:.55rem}
@@ -410,7 +410,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1907</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1911</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -436,19 +436,11 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
         <span class="legend">Cuotas <b id="legCuotas">0 / 0</b></span>
       </div>
       </div>
-      <div class="prog__resumen">
-        <div class="fx__grid">
-          <div class="fx__col pend"><h4><i></i> Pendientes</h4><div class="fx__val" id="fxPendUsd">u$s 0</div><div class="fx__ars" id="fxPendArs">$ 0 · ARS</div></div>
-          <div class="fx__col paid"><h4><i></i> Pagadas</h4><div class="fx__val" id="fxPaidUsd">u$s 0</div><div class="fx__ars" id="fxPaidArs">$ 0 · ARS</div></div>
-        </div>
+      <div class="prog__kpis">
+        <div class="kpi kpi--accent"><span class="kpi__label">Total Objetivo</span><span class="kpi__val" id="kpiObj">u$s 0</span><span class="kpi__sub ars" id="kpiObjArs">$ 0 · ARS</span></div>
+        <div class="kpi kpi--accent2"><span class="kpi__label">Nº de Depósitos</span><span class="kpi__val" id="kpiNum">0</span><span class="kpi__sub">niveles del desafío</span></div>
+        <div class="kpi kpi--warn"><span class="kpi__label">Restante</span><span class="kpi__val" id="kpiRest">u$s 0</span><span class="kpi__sub ars" id="kpiRestArs">$ 0 · ARS</span></div>
       </div>
-    </div></article>
-
-    <!-- kpis -->
-    <article class="card b-kpis reveal"><div class="card__inner" style="gap:clamp(.7rem,1.6vw,1.1rem)">
-      <div class="kpi kpi--accent"><span class="kpi__label">Total Objetivo</span><span class="kpi__val" id="kpiObj">u$s 0</span><span class="kpi__sub ars" id="kpiObjArs">$ 0 · ARS</span></div>
-      <div class="kpi kpi--accent2"><span class="kpi__label">Nº de Depósitos</span><span class="kpi__val" id="kpiNum">0</span><span class="kpi__sub">niveles del desafío</span></div>
-      <div class="kpi kpi--warn"><span class="kpi__label">Restante</span><span class="kpi__val" id="kpiRest">u$s 0</span><span class="kpi__sub ars" id="kpiRestArs">$ 0 · ARS</span></div>
     </div></article>
 
     <!-- config (Resetear) -->
@@ -681,7 +673,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260828.1907";
+const APP_VERSION = "v.260828.1911";
 
 const state = {
   objetivo: 100000,
@@ -921,8 +913,6 @@ function render(){
   kpiObj.textContent=fmtUsd(state.objetivo); kpiObjArs.textContent=fmtArs(ars(state.objetivo));
   kpiNum.textContent=state.numDep;
   kpiRest.textContent=fmtUsd(restante); kpiRestArs.textContent=fmtArs(ars(restante));
-  fxPendUsd.textContent=fmtUsd(restante); fxPendArs.textContent=fmtArs(ars(restante));
-  fxPaidUsd.textContent=fmtUsd(ahorrado); fxPaidArs.textContent=fmtArs(ars(ahorrado));
   renderCuotas();
   renderHistorial();
   renderRitmo();
