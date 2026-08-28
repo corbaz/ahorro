@@ -407,7 +407,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1812</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1818</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -679,7 +679,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260828.1812";
+const APP_VERSION = "v.260828.1818";
 
 const state = {
   objetivo: 100000,
@@ -1524,6 +1524,9 @@ if (inFechaFin) inFechaFin.addEventListener("change", ()=>{
   hacerBackup(); render();
   toast(state.fechaFin ? "Fecha de finalización guardada" : "Fecha de finalización quitada");
 });
+// al enfocar un input, dejar el valor seleccionado para escribir encima
+function selOnFocus(el){ if(el){ el.addEventListener('focus', ()=>{ try{ el.select(); }catch(e){} }); } }
+[inObj, inNum, inDolar, subRateDolar, inFechaFin].forEach(selOnFocus);
 modalPagar.addEventListener("click", e=>{ if(e.target===modalPagar) cerrarPagar(); });
 document.getElementById('modalCadencia').addEventListener("click", e=>{ if(e.target.id==='modalCadencia') cerrarCadencia(); });
 modalConfirm.addEventListener("click", e=>{ if(e.target===modalConfirm) modalConfirm.classList.remove("show"); });
