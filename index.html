@@ -355,7 +355,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
 /* account picker (elegir / crear cuenta) */
 .acc-list{display:flex;flex-direction:column;gap:.6rem;margin:0 0 .9rem;max-height:46vh;overflow:auto;text-align:left}
 .acc-item{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.85rem 1rem;border-radius:calc(var(--radius) - .9rem);border:1px solid var(--hairline);background:var(--surface-2);cursor:pointer;transition:border-color .25s var(--ease),background .25s var(--ease),transform .25s var(--ease),box-shadow .25s var(--ease);width:100%}
-.acc-item:hover{border-color:color-mix(in srgb,var(--accent) 40%,var(--hairline));background:color-mix(in srgb,var(--accent) 4%,var(--surface-2));transform:translateY(-1px);box-shadow:0 10px 26px -18px color-mix(in srgb,var(--accent) 60%,transparent)}
+.acc-item:hover{border-color:color-mix(in srgb,var(--accent) 60%,var(--surface-2));background:color-mix(in srgb,var(--accent) 8%,var(--surface-2));transform:translateY(-1px);box-shadow:0 12px 28px -18px color-mix(in srgb,var(--accent) 70%,transparent)}
 .acc-item:focus-visible{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
 .acc-item .acc-name{display:block;font-weight:700;font-size:.95rem;letter-spacing:-0.01em}
 .acc-item .acc-meta{display:block;font-size:.7rem;color:var(--txt-3);margin-top:.15rem}
@@ -390,7 +390,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1613</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1623</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -654,7 +654,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260828.1613";
+const APP_VERSION = "v.260828.1623";
 
 const state = {
   objetivo: 100000,
@@ -824,7 +824,7 @@ function recalcular(){
   toast("Plan recalculado y registrado en el historial");
 }
 
-function reiniciarCuotas(){ state.cuotas.forEach(c=>c.paid=false); hacerBackup(); render(); toast("Cuotas marcadas como pendientes"); }
+function reiniciarCuotas(){ state.cuotas.forEach(c=>c.paid=false); state.historial=[]; hacerBackup(); syncToCloud(); render(); toast("Cuotas e historial reiniciados"); }
 function setFilter(f){ state.filter=f; filters.querySelectorAll(".chip").forEach(b=>b.classList.toggle("is-active",b.dataset.f===f)); renderCuotas(); }
 
 /* ============================================================
