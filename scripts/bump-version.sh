@@ -15,8 +15,8 @@ if [[ ! -f "$HTML" ]]; then
   exit 0  # no romper el commit si el archivo no está
 fi
 
-# versión en hora de Buenos Aires (GMT-3) → America/Argentina/Buenos_Aires
-VER="v.$(TZ='America/Argentina/Buenos_Aires' date +%y%m%d.%H%M)"
+# versión en hora de Buenos Aires (GMT-3): UTC menos 3h (Argentina es fija UTC-3, sin DST)
+VER="v.$(date -u -d '-3 hours' +%y%m%d.%H%M)"
 
 # reemplazar la constante APP_VERSION (línea con const APP_VERSION = "...";)
 if grep -qE 'const APP_VERSION = "v\.' "$HTML"; then
