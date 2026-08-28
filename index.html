@@ -412,7 +412,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1943</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.2008</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -474,8 +474,6 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
         <div class="ritmo__kpis">
           <div class="ritmo__kpi"><span class="ritmo__label">Días restantes</span><span class="ritmo__val" id="rDiasRest">—</span><span class="ritmo__sub" id="rDiasRestSub">—</span></div>
           <div class="ritmo__kpi"><span class="ritmo__label">Ritmo ideal</span><span class="ritmo__val" id="rRitmoIdeal">—</span><span class="ritmo__sub" id="rRitmoIdealSub">1 cuota cada … días</span></div>
-          <div class="ritmo__kpi"><span class="ritmo__label">Ritmo necesario ahora</span><span class="ritmo__val" id="rRitmoAhora">—</span><span class="ritmo__sub" id="rRitmoAhoraSub">para llegar a tiempo</span></div>
-          <div class="ritmo__kpi"><span class="ritmo__label">Ritmo real</span><span class="ritmo__val" id="rRitmoReal">—</span><span class="ritmo__sub" id="rRitmoRealSub">promedio real por cuota</span></div>
           <div class="ritmo__kpi"><span class="ritmo__label">Balance</span><span class="ritmo__val" id="rBalance">—</span><span class="ritmo__sub" id="rBalanceSub">—</span></div>
         </div>
         <div class="ritmo__bar">
@@ -675,7 +673,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260828.1943";
+const APP_VERSION = "v.260828.2008";
 
 const state = {
   objetivo: 100000,
@@ -771,7 +769,7 @@ function ritmo(){
   // cuotas esperadas a hoy por CADENCIA: vence la N.ª el día (N-1)*cadencia,
   // así que a hoy (día 0 = arranque) ya vence la cuota 1 → esperadas >= 1
   const pctTiempo = diasTotales > 0 ? diasTranscurridos / diasTotales : 0;
-  const esperadas = numDep > 0 ? Math.min(numDep, Math.max(0, Math.floor(diasTranscurridos / (ritmoIdeal||1)))) : 0;
+  const esperadas = numDep > 0 ? Math.min(numDep, diasTranscurridos === 0 ? 0 : (Math.floor(diasTranscurridos / (ritmoIdeal||1)) + 1)) : 0;
   // estado de fecha
   const rezago = esperadas - pagadas;  // >0 => atrasado
   const enFecha = rezago <= 0;
@@ -935,27 +933,10 @@ function renderRitmo(){
   document.getElementById('rDiasRest').textContent = r.diasRestantes + ' días';
   document.getElementById('rDiasRestSub').textContent = 'hasta ' + fmtDay(state.fechaFin);
   document.getElementById('rRitmoIdeal').textContent = r.ritmoIdeal.toFixed(1) + ' días';
-  document.getElementById('rRitmoIdealSub').textContent = 'próximo pago ' + fmtDay(r.pagoProxIdeal.toISOString());
-  const elAhora = document.getElementById('rRitmoAhora'), elAhoraSub = document.getElementById('rRitmoAhoraSub');
-  if (r.rezago > 0){
-    elAhora.textContent = r.ritmoAhora>0 ? (r.ritmoAhora.toFixed(1)+' días') : '—';
-    elAhora.className = 'ritmo__val bad';
-    elAhoraSub.textContent = r.ritmoAhora>0 ? ('1 cada '+r.ritmoAhora.toFixed(1)+' días para recuperar') : 'para recuperar';
-  } else {
-    elAhora.textContent = 'cadencia'; elAhora.className = 'ritmo__val ok ritmo__val--status';
-    elAhoraSub.textContent = '1 cada '+r.ritmoIdeal.toFixed(1)+' días · cae '+fmtDay(r.pagoProxNecesario.toISOString());
-  }
-  const elReal = document.getElementById('rRitmoReal'), elRealSub = document.getElementById('rRitmoRealSub');
-  if (r.diasDesvio === 0){
-    elReal.textContent = 'cadencia'; elReal.className = 'ritmo__val ok ritmo__val--status';
-    elRealSub.textContent = '1 cuota cada ' + r.ritmoIdeal.toFixed(1) + ' días';
-  } else if (r.diasDesvio > 0){
-    elReal.textContent = 'adelantado'; elReal.className = 'ritmo__val ok ritmo__val--status';
-    elRealSub.textContent = r.diasDesvio + ' día(s) de ventaja';
-  } else {
-    elReal.textContent = 'atrasado'; elReal.className = 'ritmo__val bad ritmo__val--status';
-    elRealSub.textContent = Math.abs(r.diasDesvio) + ' día(s) de atraso';
-  }
+  // próximo pago = vence de la primera cuota impaga (roja)
+  const primeraPend = pendientes().sort((a,b)=>a.n-b.n)[0];
+  const proxPago = (primeraPend && primeraPend.fecha) ? primeraPend.fecha : null;
+  document.getElementById('rRitmoIdealSub').textContent = proxPago ? ('próximo pago ' + fmtDay(proxPago)) : '—';
   // balance con color
   const elBal = document.getElementById('rBalance'), elBalSub = document.getElementById('rBalanceSub');
   if (r.balance > 0){
