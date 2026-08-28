@@ -70,7 +70,26 @@
       .select('id, nombre, objetivo, num_dep, dolar, updated_at')
       .order('updated_at', { ascending: false });
     if (error){ console.error('listAccounts:', error.message); return []; }
-    return data || [];
+    // completar con el avance de cada cuenta (cuotas pagadas + ahorrado u$s)
+    const planes = data || [];
+    const out = [];
+    for (const p of planes){
+      const cq = await sb.from('cuotas').select('monto, paid').eq('plan_id', p.id);
+      const cuotas = cq.data || [];
+      const pagadas = cuotas.filter(c=>c.paid);
+      const ahorradoUsd = pagadas.reduce((s,c)=> s + Number(c.monto||0), 0);
+      out.push({ id:p.id, nombre:p.nombre, objetivo:p.objetivo, num_dep:p.num_dep, dolar:p.dolar,
+        updated_at:p.updated_at, total:cuotas.length, pagadas:pagadas.length, ahorradoUsd });
+    }
+    return out;
+  }
+
+  /* ---- Borrar una cuenta (y su plan/historial por cascade) ---- */
+  async function deleteAccount(planId){
+    if (!ready || !user || !planId) return false;
+    const { error } = await sb.from('planes').delete().eq('id', planId);
+    if (error){ console.error('deleteAccount:', error.message); return false; }
+    return true;
   }
 
   /* ---- Crear una cuenta nueva (plan) con un nombre ---- */
@@ -147,5 +166,5 @@
   }
 
   // API pública
-  window.SupaSync = { init, isReady, getUser, isLoggedIn, loginGoogle, logout, listAccounts, createAccount, renameAccount, uploadState, downloadState };
+  window.SupaSync = { init, isReady, getUser, isLoggedIn, loginGoogle, logout, listAccounts, createAccount, renameAccount, deleteAccount, uploadState, downloadState };
 })();

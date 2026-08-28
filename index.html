@@ -89,6 +89,7 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 .btn:active{transform:scale(.97)}
 .btn svg{width:16px;height:16px;stroke:currentColor;stroke-width:1.6;fill:none}
 .btn--primary{--b-bg:linear-gradient(150deg,var(--accent),var(--accent-2));--b-fg:#04110b;--b-bd:transparent;color:#04110b;font-weight:700;box-shadow:0 1px 0 rgba(255,255,255,.35) inset,0 10px 30px -10px var(--accent-glow)}
+.btn--danger{--b-bg:#e5484d;--b-fg:#fff;--b-bd:transparent;color:#fff;font-weight:700;box-shadow:0 10px 30px -12px rgba(229,72,77,.55)}
 .btn--ghost{--b-bg:transparent}
 .btn--icon{padding:.6rem;border-radius:999px}
 .btn--warn{--b-bg:linear-gradient(150deg,#fb7185,#e11d48);--b-fg:#1a0307;--b-bd:transparent;color:#1a0307;font-weight:700}
@@ -357,9 +358,16 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
 .acc-item{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.85rem 1rem;border-radius:calc(var(--radius) - .9rem);border:1px solid var(--hairline);background:var(--surface-2);cursor:pointer;text-align:left;transition:border-color .25s var(--ease),background .25s var(--ease),box-shadow .25s var(--ease);width:100%}
 .acc-item:hover{border-color:color-mix(in srgb,var(--accent) 60%,var(--surface-2));background:color-mix(in srgb,var(--accent) 8%,var(--surface-2));box-shadow:0 0 26px -14px color-mix(in srgb,var(--accent) 85%,transparent)}
 .acc-item:focus-visible{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
-.acc-item .acc-name{display:block;font-weight:700;font-size:.95rem;letter-spacing:-0.01em}
+.acc-item .acc-main{min-width:0;flex:1}
+.acc-item .acc-name{display:block;font-weight:700;font-size:.95rem;letter-spacing:-0.01em;color:var(--accent)}
 .acc-item .acc-meta{display:block;font-size:.7rem;color:var(--txt-3);margin-top:.15rem}
+.acc-item .acc-meta--prog{color:var(--accent);opacity:.9}
+.acc-item .acc-actions{display:inline-flex;align-items:center;gap:.35rem;flex:none}
 .acc-item .acc-arrow{color:var(--txt-3);flex:none}
+.acc-del{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:.6rem;border:1px solid transparent;background:transparent;color:var(--txt-3);cursor:pointer;opacity:.55;transition:opacity .25s var(--ease),color .25s var(--ease),background .25s var(--ease),border-color .25s var(--ease)}
+.acc-del svg{width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none}
+.acc-item:hover .acc-del{opacity:1}
+.acc-del:hover{color:#e5484d;background:rgba(229,72,77,.12);border-color:rgba(229,72,77,.35)}
 .acc-empty{text-align:center;color:var(--txt-3);font-size:.85rem;padding:1rem 0}
 .acc-new{display:flex;flex-direction:column;gap:.65rem;text-align:left}
 .acc-field{display:flex;flex-direction:column;gap:.35rem}
@@ -374,7 +382,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
 .sec h2{font-size:1.4rem;font-weight:700;letter-spacing:-0.02em}
 .foot{margin-top:3rem;text-align:center;font-size:.72rem;color:var(--txt-3);font-weight:500}
 .foot b{color:var(--txt-2);font-weight:600}
-@media(max-width:560px){.nav{border-radius:1.4rem;padding:.5rem .5rem .5rem 1rem}.nav__sub{display:none}.cfg__row{grid-template-columns:1fr}.fx__grid{grid-template-columns:1fr}.modal__totals{grid-template-columns:1fr}.grid-cuotas{grid-template-columns:repeat(auto-fill,minmax(9rem,1fr))}.ledger__t{font-size:.7rem}.ledger__t thead th{font-size:.56rem}}
+@media(max-width:560px){.nav{border-radius:1.4rem;padding:.5rem .5rem .5rem 1rem}.nav__sub{display:none}.cfg__row{grid-template-columns:1fr}.fx__grid{grid-template-columns:1fr}.modal__totals{grid-template-columns:1fr}.grid-cuotas{grid-template-columns:repeat(auto-fill,minmax(9rem,1fr))}.ledger__t{font-size:.7rem}.ledger__t thead th{font-size:.56rem}.auth-card{width:min(100%,100%)}.auth-card__inner{padding:1.4rem}.auth-card h2{font-size:1.15rem}.auth-card p{font-size:.8rem}.acc-list{max-height:50vh;gap:.5rem}.acc-item{padding:.75rem .85rem}}
 @media(prefers-reduced-motion:reduce){*{transition-duration:.01ms !important;animation-duration:.01ms !important}.reveal{opacity:1;transform:none}}
 </style>
 </head>
@@ -390,7 +398,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1355</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1408</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -574,6 +582,14 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
   </div></div>
 </div>
 
+<!-- MODAL: confirmar borrado de cuenta -->
+<div class="modal modal--confirm" id="modalConfirmAcc" role="dialog" aria-modal="true">
+  <div class="modal__card"><div class="modal__inner">
+    <div class="modal__head"><div><div class="modal__title">¿Borrar la cuenta?</div><div class="modal__sub" id="accConfirmText">Se borrarán su plan y su historial. No se puede deshacer.</div></div></div>
+    <div class="modal__foot" style="justify-content:stretch"><button class="btn btn--ghost" id="accConfirmNo" style="flex:1;justify-content:center">Cancelar</button><button class="btn btn--danger" id="accConfirmYes" style="flex:1;justify-content:center">Borrar</button></div>
+  </div></div>
+</div>
+
 <!-- MODAL: Pagar cuotas -->
 <div class="modal" id="modalPagar" role="dialog" aria-modal="true" aria-label="Pagar cuotas">
   <div class="modal__card"><div class="modal__inner">
@@ -654,7 +670,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260828.1355";
+const APP_VERSION = "v.260828.1408";
 
 const state = {
   objetivo: 100000,
@@ -1239,7 +1255,16 @@ function bootLocal(){
 
   function accItem(a){
     const meta = fmtUsd(a.objetivo) + ' · ' + a.num_dep + ' dep.';
-    return '<button class="acc-item" data-id="'+a.id+'"><span><span class="acc-name">'+escapeHtml(a.nombre)+'</span><span class="acc-meta">'+meta+'</span></span><span class="acc-arrow"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></button>';
+    const ars = Math.round((a.ahorradoUsd||0) * Number(a.dolar||0)).toLocaleString("es-AR");
+    const prog = 'Ahorro ' + fmtUsd(a.ahorradoUsd||0) + ' · $ ' + ars + ' · ' + (a.pagadas||0) + '/' + (a.total||0) + ' cuotas';
+    return '<div class="acc-item" data-id="'+a.id+'" role="button" tabindex="0">'
+      + '<span class="acc-main"><span class="acc-name">'+escapeHtml(a.nombre)+'</span>'
+      + '<span class="acc-meta">'+meta+'</span>'
+      + '<span class="acc-meta acc-meta--prog">'+prog+'</span></span>'
+      + '<span class="acc-actions">'
+      + '<button class="acc-del" data-del="'+a.id+'" title="Borrar esta cuenta" aria-label="Borrar cuenta"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13"/></svg></button>'
+      + '<span class="acc-arrow"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>'
+      + '</span></div>';
   }
 
   async function showAccountPicker(){
@@ -1248,7 +1273,13 @@ function bootLocal(){
       accList.innerHTML = '<div class="acc-empty">Todavía no tenés cuentas. Creá la primera.</div>';
     } else {
       accList.innerHTML = accounts.map(accItem).join('');
-      accList.querySelectorAll('.acc-item').forEach(el=> el.addEventListener('click', ()=> openAccount(el.dataset.id)) );
+      accList.querySelectorAll('.acc-item').forEach(el=>{
+        el.addEventListener('click', e=>{
+          const del = e.target.closest('.acc-del');
+          if (del){ e.stopPropagation(); confirmDeleteAccount(del.dataset.del); return; }
+          openAccount(el.dataset.id);
+        });
+      });
     }
     accNewWrap.style.display='none'; accNewBtn.style.display='';
     accName.value='';
@@ -1305,6 +1336,21 @@ function bootLocal(){
   });
   accName.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); accCreate.click(); } });
   accLogout.addEventListener("click", ()=> window.SupaSync.logout());
+  // borrar cuenta
+  let pendingDelete = null;
+  function confirmDeleteAccount(planId){
+    pendingDelete = planId;
+    $("accConfirmText").textContent = 'Se borrará esta cuenta, su plan y su historial. No se puede deshacer.';
+    $("modalConfirmAcc").classList.add('show');
+  }
+  $("accConfirmNo").addEventListener("click", ()=>{ pendingDelete=null; $("modalConfirmAcc").classList.remove('show'); });
+  $("accConfirmYes").addEventListener("click", async ()=>{
+    const id = pendingDelete; pendingDelete=null; $("modalConfirmAcc").classList.remove('show');
+    if (!id) return;
+    const ok = await window.SupaSync.deleteAccount(id);
+    if (ok){ toast('Cuenta borrada'); showAccountPicker(); }
+    else { toast('No se pudo borrar la cuenta', true); }
+  });
 
   // al cambiar la sesión
   window.addEventListener('auth-change', async (e)=>{
@@ -1384,7 +1430,7 @@ modalPagar.addEventListener("click", e=>{ if(e.target===modalPagar) cerrarPagar(
 document.getElementById('modalCadencia').addEventListener("click", e=>{ if(e.target.id==='modalCadencia') cerrarCadencia(); });
 modalConfirm.addEventListener("click", e=>{ if(e.target===modalConfirm) modalConfirm.classList.remove("show"); });
 modalRate.addEventListener("click", e=>{ if(e.target===modalRate) cancelarRate(); });
-document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ cancelarRate(); cerrarPagar(); cerrarCadencia(); modalConfirm.classList.remove("show"); celebrate.classList.remove("show"); } });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ cancelarRate(); cerrarPagar(); cerrarCadencia(); modalConfirm.classList.remove("show"); $("modalConfirmAcc").classList.remove("show"); celebrate.classList.remove("show"); } });
 
 // el arranque está condicionado a la puerta de login (initSupabase llama a
 // bootLocal si no hay Supabase). Si no hay sesión, la app espera en el login.
