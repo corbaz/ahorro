@@ -119,7 +119,7 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 .b-grid{grid-column:span 12}
 .b-hist{grid-column:span 12}
 .b-export{grid-column:span 12}
-@media(max-width:880px){.bento>*{grid-column:span 12 !important;grid-row:auto !important}.b-kpis{grid-template-rows:repeat(3,1fr)}}
+@media(max-width:880px){.bento>*{grid-column:span 12 !important;grid-row:auto !important}.b-kpis{display:flex;flex-direction:column;gap:clamp(.7rem,1.6vw,1.1rem);grid-template-rows:none}}
 
 /* kpi */
 .kpi{border-radius:calc(var(--radius) - .6rem);padding:1.15rem 1.25rem;background:var(--surface);border:1px solid var(--hairline);display:flex;flex-direction:column;justify-content:center;gap:.55rem}
@@ -231,7 +231,8 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 .cuotas__count b{color:var(--txt);font-weight:600}
 .grid-cuotas{display:grid;gap:.7rem;grid-template-columns:repeat(auto-fill,minmax(11.5rem,1fr))}
 /* estado pendiente: rojo carmesí sutil */
-.cuota{position:relative;border-radius:1.15rem;padding:1.1rem 1.1rem 1rem;background:linear-gradient(160deg,rgba(251,113,133,.07),rgba(251,113,133,.018));border:1px solid rgba(251,113,133,.22);display:flex;flex-direction:column;gap:.85rem;transition:transform .45s var(--ease),border-color .35s var(--ease),background .35s var(--ease);will-change:transform}
+.cuota{position:relative;border-radius:1.15rem;padding:1.1rem 1.1rem 1rem;background:linear-gradient(160deg,rgba(251,113,133,.07),rgba(251,113,133,.018));border:1px solid rgba(251,113,133,.22);display:flex;flex-direction:column;gap:.85rem;transition:transform .45s var(--ease),border-color .35s var(--ease),background .35s var(--ease);will-change:transform;cursor:pointer}
+.cuota.is-paid{cursor:default}
 .cuota:hover{transform:translateY(-2px);border-color:rgba(251,113,133,.4)}
 /* fila 1: N.º + pill de nivel (separados, bien repartidos) */
 .cuota__top{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
@@ -403,7 +404,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1434</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1453</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -675,7 +676,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260828.1434";
+const APP_VERSION = "v.260828.1453";
 
 const state = {
   objetivo: 100000,
@@ -1047,12 +1048,16 @@ function renderCuotas(){
   }
   const maxMonto = Math.max(1, ...state.cuotas.map(c=>c.monto));
   cuotaGrid.innerHTML = list.map(c => `
-    <div class="cuota${c.paid?" is-paid":""}">
+    <div class="cuota${c.paid?" is-paid":""}" data-n="${c.n}">
       <div class="cuota__top"><span class="cuota__n">N.º ${c.n}</span><span class="cuota__lvl">${nivelLabel(c.n,state.numDep)}</span></div>
       <div class="cuota__amt"><small>u$s</small><span>${c.monto.toLocaleString("es-AR")}</span></div>
       <div class="cuota__share"><i style="width:${(c.monto/maxMonto*100).toFixed(1)}%"></i></div>
       <div class="cuota__foot"><span class="cuota__status">${c.paid?"Pagada":"Pendiente"}</span><span class="cuota__check" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-10"/></svg></span></div>
     </div>`).join("");
+  // click en una cuota pendiente → abre "Pagar cuotas" con esa preseleccionada
+  cuotaGrid.querySelectorAll('.cuota:not(.is-paid)').forEach(el=>{
+    el.addEventListener('click', ()=> abrirSubRate(new Set([+el.dataset.n])));
+  });
 }
 function nivelLabel(n,total){const r=n/Math.max(1,total); if(r<=.25)return"Inicial"; if(r<=.55)return"Medio"; if(r<=.8)return"Alto"; return"Final";}
 
@@ -1104,7 +1109,9 @@ function escapeHtml(s){return String(s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"
    Modal "Pagar cuotas" + Submodal "Cotización dólar"
    ============================================================ */
 /* --- Submodal de cotización --- */
-function abrirSubRate(){
+let _preSel = null;
+function abrirSubRate(preSel){
+  _preSel = preSel || null;
   if (pendientes().length===0){ toast("No quedan cuotas pendientes", true); return; }
   subRateDolar.value = state.dolar || 1;
   modalRate.classList.add("show");
@@ -1126,7 +1133,8 @@ function cancelarRate(){ modalRate.classList.remove("show"); }
 /* --- Modal de pago --- */
 function abrirPagar(){
   if (pendientes().length===0){ toast("No quedan cuotas pendientes", true); return; }
-  state._sel = new Set();
+  state._sel = _preSel || new Set();
+  _preSel = null;
   modalRateShow.textContent = state.dolar.toLocaleString("es-AR");
   renderChecklist(); actualizarTotalesModal();
   modalPagar.classList.add("show");
