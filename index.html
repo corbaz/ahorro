@@ -347,6 +347,18 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
 .auth-card h2{font-size:1.3rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:.4rem}
 .auth-card p{color:var(--txt-2);font-size:.86rem;margin-bottom:1.6rem}
 .auth-card .auth-note{font-size:.72rem;color:var(--txt-3);margin-top:1rem}
+/* account picker (elegir / crear cuenta) */
+.acc-list{display:flex;flex-direction:column;gap:.6rem;margin:0 0 .9rem;max-height:46vh;overflow:auto;text-align:left}
+.acc-item{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.85rem 1rem;border-radius:calc(var(--radius) - .9rem);border:1px solid var(--hairline);background:var(--surface-2);cursor:pointer;transition:border-color .25s var(--ease),background .25s var(--ease),transform .25s var(--ease);width:100%}
+.acc-item:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 6%,var(--surface-2));transform:translateY(-1px)}
+.acc-item .acc-name{display:block;font-weight:700;font-size:.95rem;letter-spacing:-0.01em}
+.acc-item .acc-meta{display:block;font-size:.7rem;color:var(--txt-3);margin-top:.15rem}
+.acc-item .acc-arrow{color:var(--txt-3);flex:none}
+.acc-empty{text-align:center;color:var(--txt-3);font-size:.85rem;padding:1rem 0}
+.acc-new{display:flex;flex-direction:column;gap:.65rem;text-align:left}
+.acc-field{display:flex;flex-direction:column;gap:.35rem}
+.acc-field label{font-size:.74rem;font-weight:600;color:var(--txt-2)}
+.acc-form-actions{display:flex;gap:.5rem;justify-content:flex-end;margin-top:.2rem}
 
 /* reveal */
 .reveal{opacity:0;transform:translateY(2rem);transition:opacity .8s var(--ease-out),transform .8s var(--ease-out)}
@@ -363,7 +375,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
 <body>
 <div class="bg-mesh"></div><div class="bg-grain"></div>
 
-<div class="wrap">
+<div class="wrap" id="appShell" style="display:none">
   <nav class="nav reveal" aria-label="Principal">
     <div class="nav__brand">
       <span class="nav__logo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 5.5C14 4 9.5 4.2 7 6.4 4.6 8.5 5 12 8 13.2c2 .8 4 .8 6 .2M7 18.5c2.5 1.6 7 1.6 9-.3 2.3-2.1 1.9-5.6-1.1-6.8"/></svg></span>
@@ -371,7 +383,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260825.0801</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1324</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -511,18 +523,37 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
   <p class="foot">Reto de Ahorro · seguí tu plan de ahorro cuota por cuota.</p>
 </div>
 
-<!-- AUTH: overlay de login (Gmail) -->
+<!-- AUTH: overlay de login (Gmail) — puerta de entrada -->
 <div class="auth-overlay" id="authOverlay">
   <div class="auth-card"><div class="auth-card__inner">
     <div class="nav__logo" style="margin:0 auto 1.2rem;width:48px;height:48px;border-radius:16px"><svg viewBox="0 0 24 24" style="width:24px;height:24px"><path d="M12 2v20M17 5.5C14 4 9.5 4.2 7 6.4 4.6 8.5 5 12 8 13.2c2 .8 4 .8 6 .2M7 18.5c2.5 1.6 7 1.6 9-.3 2.3-2.1 1.9-5.6-1.1-6.8" stroke="#050506" stroke-width="1.6" fill="none"/></svg></div>
     <h2>Reto de Ahorro</h2>
-    <p>Ingresá para guardar tu progreso en la nube y verlo desde cualquier dispositivo.</p>
+    <p>Ingresá con tu mail de Google para crear o abrir tu cuenta. Tu progreso se guarda en la nube.</p>
     <button class="btn btn--google" id="btnGoogleLogin" style="width:100%;justify-content:center">
       <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.5 12.2c0-.7-.1-1.4-.2-2H12v4h5.9c-.3 1.3-1 2.4-2.2 3.1v2.6h3.5c2-1.9 3.3-4.7 3.3-7.7z"/><path fill="#34A853" d="M12 23c2.9 0 5.4-1 7.2-2.6l-3.5-2.7c-1 .7-2.2 1-3.7 1-2.9 0-5.3-1.9-6.2-4.6H2.2v2.8C4 20.1 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.8 14.7c-.2-.7-.4-1.5-.4-2.2s.1-1.5.4-2.2V9.5H2.2C1.4 11 1 12.5 1 14.5s.4 3.5 1.2 5l3.6-2.8z"/><path fill="#EA4335" d="M12 5.6c1.6 0 3 .5 4.1 1.6l3-3C17 2.5 14.7 1.5 12 1.5 7.7 1.5 4 4.4 2.6 8.5l3.6 2.8c.9-2.7 3.3-4.6 6.2-4.6z"/></svg>
       Ingresar con Google
     </button>
-    <p class="auth-note">Si saltás esto, tu progreso se guarda solo en este navegador.</p>
-    <button class="btn btn--ghost" id="btnAuthClose" style="margin-top:.8rem;width:100%;justify-content:center">Seguir sin cuenta</button>
+    <p class="auth-note">Un mismo mail puede tener varias cuentas con nombres distintos (p. ej. "Casa" y "Auto").</p>
+  </div></div>
+</div>
+
+<!-- CUENTAS: elegir / crear cuenta tras el login -->
+<div class="auth-overlay" id="accountOverlay">
+  <div class="auth-card"><div class="auth-card__inner">
+    <h2>Tus cuentas</h2>
+    <p>Elegí una cuenta para abrir o creá una nueva con otro nombre.</p>
+    <div class="acc-list" id="accList"></div>
+    <div id="accNewWrap" style="display:none">
+      <div class="acc-new">
+        <label class="acc-field"><span>Nombre de la cuenta</span><input class="input" id="accName" maxlength="60" placeholder="p. ej. Casa" autocomplete="off"/></label>
+        <div class="acc-form-actions">
+          <button class="btn btn--ghost" id="accCancel">Cancelar</button>
+          <button class="btn btn--primary" id="accCreate">Crear cuenta</button>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn--primary" id="accNewBtn" style="width:100%;justify-content:center"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none"><path d="M12 5v14M5 12h14"/></svg> Crear cuenta nueva</button>
+    <button class="btn btn--ghost" id="accLogout" style="margin-top:.6rem;width:100%;justify-content:center">Cerrar sesión</button>
   </div></div>
 </div>
 
@@ -606,12 +637,14 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260825.0801";
+const APP_VERSION = "v.260828.1324";
 
 const state = {
   objetivo: 100000,
   numDep: 100,
   dolar: 1,
+  planId: null,      // id de la cuenta (plan) en Supabase — se setea al abrir/crear cuenta
+  nombre: null,      // nombre de la cuenta (lo elige el usuario)
   fechaInicio: null,   // ISO date — se setea al crear/recalcular el plan
   fechaFin: null,      // ISO date — fecha de finalización elegida por el usuario
   cuotas: [],     // {n, monto, paid}
@@ -724,7 +757,7 @@ function restaurarBackup(){
 
 /* ---- Sincronizar a la nube (Supabase) si hay sesión ---- */
 function syncToCloud(){
-  if (window.SupaSync && window.SupaSync.isReady() && window.SupaSync.isLoggedIn()){
+  if (window.SupaSync && window.SupaSync.isReady() && window.SupaSync.isLoggedIn() && state.planId){
     window.SupaSync.uploadState(state).catch(e=>console.error('syncToCloud:', e.message));
   }
 }
@@ -1131,7 +1164,31 @@ const navVer=$("navVer");
 // estampar la versión en el badge (arriba a la derecha)
 navVer.textContent = APP_VERSION;
 
-/* ---- Supabase auth + sync ---- */
+/* ---- helpers de arranque (puerta de login / modo local) ---- */
+function syncInputs(){
+  inObj.value = state.objetivo; inNum.value = state.numDep; inDolar.value = state.dolar;
+  const f = document.getElementById('inFechaFin');
+  if (f && state.fechaFin){ const d=new Date(state.fechaFin); f.value = d.toISOString().slice(0,10); }
+  if (!state.fechaInicio) state.fechaInicio = todayISO();
+}
+function seedNewPlan(){
+  state.cuotas = resetear(state.objetivo, state.numDep);
+  // ejemplo inicial: una cuota ya pagada para mostrar cómo se ve el historial
+  const c25 = state.cuotas.find(c=>c.n===25); if (c25) c25.paid = true;
+  state.historial = [{ tipo:"pago", fecha:seedFecha, n:25, rate:1,
+    montoUsd:490, montoArs:490, restUsd:99510, acumUsd:490, restArs:99510, acumArs:490 }];
+}
+function revealApp(){
+  document.getElementById('appShell').style.display='';
+  requestAnimationFrame(()=> document.querySelectorAll('.reveal:not(.in)').forEach(el=> el.classList.add('in')));
+}
+function bootLocal(){
+  const had = restaurarBackup();
+  if (!had || !state.cuotas.length){ state.fechaInicio = todayISO(); seedNewPlan(); }
+  syncInputs(); render(); revealApp();
+}
+
+/* ---- Supabase auth + sync (cuentas múltiples por mail) ---- */
 // Cargar config de Supabase (fetch a config.json si no está incrustada)
 (async function initSupabase(){
   if (!window.SupaSync) return;
@@ -1139,44 +1196,105 @@ navVer.textContent = APP_VERSION;
   if (!cfg){
     try{ const r = await fetch('supabase/config.json'); if(r.ok) cfg = await r.json(); }catch(e){}
   }
-  if (!cfg){ console.info('[supabase] sin configurar — la app sigue en modo local'); return; }
+  if (!cfg){ console.info('[supabase] sin configurar — la app corre en modo local'); bootLocal(); return; }
   window.SupaSync.init(cfg.projectUrl, cfg.anonKey);
-  // UI: botones de login/logout
-  const btnLogin=$("btnLogin"), navUser=$("navUser"), overlay=$("authOverlay");
-  const btnGoogle=$("btnGoogleLogin"), btnAuthClose=$("btnAuthClose");
-  function showUser(u){
-    if (u){
-      navUser.style.display='inline-flex';
-      const name = u.user_metadata?.full_name || u.email?.split('@')[0] || 'Yo';
-      const pic = u.user_metadata?.avatar_url || '';
-      navUser.innerHTML = (pic?`<img class="avatar" src="${pic}" alt=""/>`:'') + escapeHtml(name);
-      btnLogin.textContent='Salir'; btnLogin.title='Cerrar sesión';
-    } else {
-      navUser.style.display='none'; navUser.innerHTML='';
-      btnLogin.textContent='Ingresar'; btnLogin.title='';
-    }
+  if (!window.SupaSync.isReady()){ bootLocal(); return; }
+
+  // UI refs
+  const loginOverlay=$("authOverlay"), accOverlay=$("accountOverlay");
+  const btnLogin=$("btnLogin"), navUser=$("navUser");
+  const btnGoogle=$("btnGoogleLogin");
+  const accList=$("accList"), accNewWrap=$("accNewWrap"), accName=$("accName");
+  const accCancel=$("accCancel"), accCreate=$("accCreate"), accNewBtn=$("accNewBtn"), accLogout=$("accLogout");
+
+  // la app queda en la puerta (login) hasta elegir/crear una cuenta
+  function showGate(){ $("appShell").style.display='none'; loginOverlay.classList.add('show'); accOverlay.classList.remove('show'); }
+  function hideGates(){ loginOverlay.classList.remove('show'); accOverlay.classList.remove('show'); }
+
+  function accItem(a){
+    const meta = fmtUsd(a.objetivo) + ' · ' + a.num_dep + ' dep.';
+    return '<button class="acc-item" data-id="'+a.id+'"><span><span class="acc-name">'+escapeHtml(a.nombre)+'</span><span class="acc-meta">'+meta+'</span></span><span class="acc-arrow"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></button>';
   }
-  // escuchar cambios de sesión
-  window.addEventListener('auth-change', (e)=> showUser(e.detail.user));
+
+  async function showAccountPicker(){
+    const accounts = await window.SupaSync.listAccounts();
+    if (accounts.length===0){
+      accList.innerHTML = '<div class="acc-empty">Todavía no tenés cuentas. Creá la primera.</div>';
+    } else {
+      accList.innerHTML = accounts.map(accItem).join('');
+      accList.querySelectorAll('.acc-item').forEach(el=> el.addEventListener('click', ()=> openAccount(el.dataset.id)) );
+    }
+    accNewWrap.style.display='none'; accNewBtn.style.display='';
+    accName.value='';
+    loginOverlay.classList.remove('show'); accOverlay.classList.add('show');
+  }
+
+  function loadCloud(snap){
+    state.objetivo=snap.objetivo; state.numDep=snap.numDep; state.dolar=snap.dolar;
+    state.fechaInicio=snap.fechaInicio||null; state.fechaFin=snap.fechaFin||null;
+    state.cuotas=snap.cuotas||[]; state.historial=snap.historial||[];
+  }
+
+  function openAccountDone(){
+    hacerBackup(); syncInputs(); render(); hideGates(); revealApp();
+    navUser.style.display='inline-flex';
+    navUser.innerHTML = '<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;opacity:.8"><path d="M4 7a2 2 0 0 1 2-2h2l1.5-2h5L16 5h2a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M9 13a3 3 0 0 0 6 0 3 3 0 1 0-6 0"/></svg> '+escapeHtml(state.nombre || 'Cuenta');
+    btnLogin.textContent='Salir'; btnLogin.title='Cerrar sesión';
+    toast('Cuenta abierta');
+  }
+
+  async function openAccount(planId){
+    const snap = await window.SupaSync.downloadState(planId);
+    if (!snap){ toast('No se pudo cargar esa cuenta'); return; }
+    loadCloud(snap); state.planId=planId; state.nombre=snap.nombre;
+    openAccountDone();
+  }
+
+  async function doCreateAccount(nombre){
+    const acc = await window.SupaSync.createAccount(nombre);
+    if (!acc){ toast('No se pudo crear la cuenta'); return; }
+    // arrancar con el plan de ejemplo
+    state.objetivo=100000; state.numDep=100; state.dolar=1;
+    state.fechaInicio=todayISO(); state.fechaFin=null;
+    seedNewPlan();
+    state.planId=acc.id; state.nombre=acc.nombre;
+    openAccountDone();
+    syncToCloud(); // persistir el plan recién creado
+    toast('Cuenta creada');
+  }
+
+  // listeners
+  btnGoogle.addEventListener("click", ()=>{ loginOverlay.classList.remove('show'); window.SupaSync.loginGoogle(); });
   btnLogin.addEventListener("click", ()=>{
     if (window.SupaSync.isLoggedIn()){ window.SupaSync.logout(); }
-    else { overlay.classList.add('show'); }
+    else { showGate(); }
   });
-  btnAuthClose.addEventListener("click", ()=> overlay.classList.remove('show'));
-  btnGoogle.addEventListener("click", ()=>{ overlay.classList.remove('show'); window.SupaSync.loginGoogle(); });
-  overlay.addEventListener("click", e=>{ if(e.target===overlay) overlay.classList.remove('show'); });
-  // al loguearse: bajar sus datos de la nube; al desloguarse: backup local
+  navUser.addEventListener("click", showAccountPicker);
+  accNewBtn.addEventListener("click", ()=>{ accNewBtn.style.display='none'; accNewWrap.style.display=''; accName.focus(); });
+  accCancel.addEventListener("click", ()=>{ accNewWrap.style.display='none'; accNewBtn.style.display=''; });
+  accCreate.addEventListener("click", async ()=>{
+    const nombre = accName.value.trim(); if(!nombre){ toast('Escribí un nombre para la cuenta'); accName.focus(); return; }
+    accCreate.disabled=true; await doCreateAccount(nombre); accCreate.disabled=false; accName.value='';
+  });
+  accName.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); accCreate.click(); } });
+  accLogout.addEventListener("click", ()=> window.SupaSync.logout());
+
+  // al cambiar la sesión
   window.addEventListener('auth-change', async (e)=>{
     const u = e.detail.user;
     if (u){
-      toast('Sesión iniciada · cargando tu progreso…');
-      const cloud = await window.SupaSync.downloadState();
-      if (cloud && cloud.cuotas?.length){ Object.assign(state, cloud); hacerBackup(); render(); toast('Progreso cargado desde la nube'); }
-      else { toast('No tenés datos guardados aún — arrancá tu plan'); }
+      toast('Sesión iniciada · cargando tus cuentas…');
+      showAccountPicker();
     } else {
-      toast('Sesión cerrada · modo local');
+      state.planId=null; state.nombre=null;
+      navUser.style.display='none'; navUser.innerHTML='';
+      btnLogin.textContent='Ingresar'; btnLogin.title='';
+      showGate();
     }
   });
+
+  // arrancar en la puerta de login
+  showGate();
 })();
 
 // tema claro/oscuro (persistente)
@@ -1241,24 +1359,8 @@ modalConfirm.addEventListener("click", e=>{ if(e.target===modalConfirm) modalCon
 modalRate.addEventListener("click", e=>{ if(e.target===modalRate) cancelarRate(); });
 document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ cancelarRate(); cerrarPagar(); cerrarCadencia(); modalConfirm.classList.remove("show"); celebrate.classList.remove("show"); } });
 
-// cargar: restaurar el progreso guardado, o arrancar con un plan de ejemplo
-const had = restaurarBackup();
-inObj.value = state.objetivo; inNum.value = state.numDep; inDolar.value = state.dolar;
-// cargar fecha de finalización en el campo (si existe)
-(function(){
-  const f = document.getElementById('inFechaFin');
-  if (f && state.fechaFin){ const d=new Date(state.fechaFin); f.value = d.toISOString().slice(0,10); }
-  // si no hay fecha de inicio, setear hoy por defecto
-  if (!state.fechaInicio) state.fechaInicio = todayISO();
-})();
-if (!had || !state.cuotas.length){
-  state.cuotas = resetear(state.objetivo, state.numDep);
-  // ejemplo inicial: una cuota ya pagada para mostrar cómo se ve el historial
-  const c25 = state.cuotas.find(c=>c.n===25); if (c25) c25.paid = true;
-  state.historial = [{ tipo:"pago", fecha:seedFecha, n:25, rate:1,
-    montoUsd:490, montoArs:490, restUsd:99510, acumUsd:490, restArs:99510, acumArs:490 }];
-}
-render();
+// el arranque está condicionado a la puerta de login (initSupabase llama a
+// bootLocal si no hay Supabase). Si no hay sesión, la app espera en el login.
 
 // scroll reveal + fallback
 const io = new IntersectionObserver(es=>es.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add("in"); io.unobserve(en.target);} }),{threshold:.08,rootMargin:"0px 0px -40px 0px"});

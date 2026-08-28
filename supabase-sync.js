@@ -1,7 +1,14 @@
 /* ============================================================
-   supabase-sync.js — login Gmail + sincronización por usuario
+   supabase-sync.js — login Gmail + sincronización por CUENTA
    Carga el SDK UMD de Supabase por CDN (sin build).
-   Cada usuario logueado ve SOLO sus propios datos (RLS).
+
+   Modelo: un mismo mail de Google (auth.uid) puede tener VARIAS
+   cuentas (planes), que se distinguen por NOMBRE (lo elige el
+   usuario, p. ej. "Casa" y "Auto"). Cuotas e historial pertenecen
+   a un plan puntual (plan_id).
+
+   RLS: auth.uid() = user_id en las tres tablas -> cada usuario ve
+   SOLO sus propios datos.
    ============================================================ */
 (function(){
   "use strict";
@@ -49,45 +56,50 @@
     window.dispatchEvent(new CustomEvent('auth-change', { detail: { user: null } }));
   }
 
-  /* ---- Subir el estado local a Supabase (por usuario) ---- */
-  async function uploadState(state){
-    if (!ready || !user) return;
-    const uid = user.id;
-    // 1) upsert plan
-    const { error: e1 } = await sb.from('planes').upsert({
-      user_id: uid, objetivo: state.objetivo, num_dep: state.numDep, dolar: state.dolar,
-      fecha_inicio: state.fechaInicio, fecha_fin: state.fechaFin, updated_at: new Date().toISOString()
-    });
-    if (e1) console.error('upsert planes:', e1.message);
-    // 2) borrar cuotas viejas y reinsertar
-    await sb.from('cuotas').delete().eq('user_id', uid);
-    const filas = state.cuotas.map(c => ({ user_id: uid, n: c.n, monto: c.monto, paid: c.paid }));
-    const { error: e2 } = await sb.from('cuotas').insert(filas);
-    if (e2) console.error('insert cuotas:', e2.message);
-    // 3) historial: solo sync incremental (insertar los que no estén)
-    //    simplificación: reinsertar todo (el historial es chico)
-    await sb.from('historial').delete().eq('user_id', uid);
-    const hist = state.historial.map(h => ({
-      user_id: uid, tipo: h.tipo, fecha: h.fecha, n: h.n ?? null, rate: h.rate ?? null,
-      monto_usd: h.montoUsd ?? null, monto_ars: h.montoArs ?? null,
-      rest_usd: h.restUsd ?? null, acum_usd: h.acumUsd ?? null,
-      rest_ars: h.restArs ?? null, acum_ars: h.acumArs ?? null, texto: h.texto ?? null
-    }));
-    const { error: e3 } = await sb.from('historial').insert(hist);
-    if (e3) console.error('insert historial:', e3.message);
+  /* ---- Listar las cuentas (planes) del usuario logueado ---- */
+  async function listAccounts(){
+    if (!ready || !user) return [];
+    const { data, error } = await sb.from('planes')
+      .select('id, nombre, objetivo, num_dep, dolar, updated_at')
+      .order('updated_at', { ascending: false });
+    if (error){ console.error('listAccounts:', error.message); return []; }
+    return data || [];
   }
 
-  /* ---- Bajar el estado de Supabase al local ---- */
-  async function downloadState(){
+  /* ---- Crear una cuenta nueva (plan) con un nombre ---- */
+  async function createAccount(nombre){
     if (!ready || !user) return null;
-    const uid = user.id;
+    const { data, error } = await sb.from('planes').insert({
+      user_id: user.id,
+      nombre: nombre,
+      objetivo: 100000, num_dep: 100, dolar: 1,
+      fecha_inicio: null, fecha_fin: null
+    }).select('id, nombre').maybeSingle();
+    if (error){ console.error('createAccount:', error.message); return null; }
+    return data || null;
+  }
+
+  /* ---- Renombrar la cuenta actual (opcional) ---- */
+  async function renameAccount(planId, nombre){
+    if (!ready || !user || !planId) return false;
+    const { error } = await sb.from('planes')
+      .update({ nombre, updated_at: new Date().toISOString() })
+      .eq('id', planId);
+    if (error){ console.error('renameAccount:', error.message); return false; }
+    return true;
+  }
+
+  /* ---- Bajar el estado de una cuenta (plan) específica ---- */
+  async function downloadState(planId){
+    if (!ready || !user || !planId) return null;
     const [{ data: plan }, { data: cuotas }, { data: hist }] = await Promise.all([
-      sb.from('planes').select('*').eq('user_id', uid).maybeSingle(),
-      sb.from('cuotas').select('*').eq('user_id', uid).order('n'),
-      sb.from('historial').select('*').eq('user_id', uid).order('fecha', { ascending: false })
+      sb.from('planes').select('*').eq('id', planId).maybeSingle(),
+      sb.from('cuotas').select('*').eq('plan_id', planId).order('n'),
+      sb.from('historial').select('*').eq('plan_id', planId).order('fecha', { ascending: false })
     ]);
-    if (!plan) return null; // usuario nuevo sin datos
+    if (!plan) return null; // no existe
     return {
+      id: plan.id, nombre: plan.nombre,
       objetivo: plan.objetivo, numDep: plan.num_dep, dolar: plan.dolar,
       fechaInicio: plan.fecha_inicio, fechaFin: plan.fecha_fin,
       cuotas: (cuotas || []).map(c => ({ n: c.n, monto: Number(c.monto), paid: c.paid })),
@@ -99,6 +111,34 @@
     };
   }
 
+  /* ---- Subir el estado de la cuenta actual (state.planId) ---- */
+  async function uploadState(state){
+    if (!ready || !user || !state.planId) return;
+    const pid = state.planId;
+    const uid = user.id;
+    // actualizar el plan (upsert por id)
+    const { error: e1 } = await sb.from('planes').update({
+      objetivo: state.objetivo, num_dep: state.numDep, dolar: state.dolar,
+      fecha_inicio: state.fechaInicio, fecha_fin: state.fechaFin, updated_at: new Date().toISOString()
+    }).eq('id', pid);
+    if (e1) console.error('update planes:', e1.message);
+    // reemplazar cuotas del plan
+    await sb.from('cuotas').delete().eq('plan_id', pid);
+    const filas = state.cuotas.map(c => ({ user_id: uid, plan_id: pid, n: c.n, monto: c.monto, paid: c.paid }));
+    const { error: e2 } = await sb.from('cuotas').insert(filas);
+    if (e2) console.error('insert cuotas:', e2.message);
+    // reemplazar historial del plan
+    await sb.from('historial').delete().eq('plan_id', pid);
+    const hist = state.historial.map(h => ({
+      user_id: uid, plan_id: pid, tipo: h.tipo, fecha: h.fecha, n: h.n ?? null, rate: h.rate ?? null,
+      monto_usd: h.montoUsd ?? null, monto_ars: h.montoArs ?? null,
+      rest_usd: h.restUsd ?? null, acum_usd: h.acumUsd ?? null,
+      rest_ars: h.restArs ?? null, acum_ars: h.acumArs ?? null, texto: h.texto ?? null
+    }));
+    const { error: e3 } = await sb.from('historial').insert(hist);
+    if (e3) console.error('insert historial:', e3.message);
+  }
+
   // API pública
-  window.SupaSync = { init, isReady, getUser, isLoggedIn, loginGoogle, logout, uploadState, downloadState };
+  window.SupaSync = { init, isReady, getUser, isLoggedIn, loginGoogle, logout, listAccounts, createAccount, renameAccount, uploadState, downloadState };
 })();

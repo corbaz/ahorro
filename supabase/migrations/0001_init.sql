@@ -56,19 +56,31 @@ alter table public.cuotas   enable row level security;
 alter table public.historial enable row level security;
 
 -- Policies: SELECT/INSERT/UPDATE/DELETE solo si auth.uid() = user_id
+-- (idempotente: drop policy if exists antes de crear, para poder reaplicar la migración)
 -- Planes
+drop policy if exists "planes_select_own"  on public.planes;
 create policy "planes_select_own"  on public.planes for select using (auth.uid() = user_id);
+drop policy if exists "planes_insert_own" on public.planes;
 create policy "planes_insert_own" on public.planes for insert with check (auth.uid() = user_id);
+drop policy if exists "planes_update_own" on public.planes;
 create policy "planes_update_own" on public.planes for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "planes_delete_own" on public.planes;
 create policy "planes_delete_own" on public.planes for delete using (auth.uid() = user_id);
 
 -- Cuotas
+drop policy if exists "cuotas_select_own"  on public.cuotas;
 create policy "cuotas_select_own"  on public.cuotas for select using (auth.uid() = user_id);
+drop policy if exists "cuotas_insert_own" on public.cuotas;
 create policy "cuotas_insert_own" on public.cuotas for insert with check (auth.uid() = user_id);
+drop policy if exists "cuotas_update_own" on public.cuotas;
 create policy "cuotas_update_own" on public.cuotas for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "cuotas_delete_own" on public.cuotas;
 create policy "cuotas_delete_own" on public.cuotas for delete using (auth.uid() = user_id);
 
 -- Historial
+drop policy if exists "historial_select_own"  on public.historial;
 create policy "historial_select_own"  on public.historial for select using (auth.uid() = user_id);
+drop policy if exists "historial_insert_own" on public.historial;
 create policy "historial_insert_own" on public.historial for insert with check (auth.uid() = user_id);
+drop policy if exists "historial_delete_own" on public.historial;
 create policy "historial_delete_own" on public.historial for delete using (auth.uid() = user_id);

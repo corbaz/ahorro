@@ -140,10 +140,11 @@ La app funciona **sin cuenta** (modo local, `localStorage`). Para guardar el pro
 
 ### Cómo funciona
 
-- Al hacer click en **Ingresar** → se abre el overlay → **Ingresar con Google**
-- Cada usuario logueado ve **solo sus propios datos** (Row Level Security en Postgres)
-- Los pagos y recálculos se sincronizan a la nube automáticamente
-- Al abrir desde otro dispositivo, tu progreso se descarga solo
+- **El login es la puerta de entrada**: al abrir la app primero iniciás sesión con Google. Un mismo mail puede tener **varias cuentas**, que se distinguen por el **nombre** que elegís.
+- Tras el login se listan tus cuentas: abrís una o creás una nueva con su nombre (p. ej. **"Casa"** y **"Auto"**).
+- Cada cuenta es un **plan completo** (objetivo, cuotas, historial). Un mismo mail puede tener varias cuentas con nombres distintos.
+- Cada usuario ve **solo sus propios datos** (Row Level Security en Postgres).
+- Los pagos y recálculos se sincronizan a la nube automáticamente, **por cuenta**.
 
 ### Sin cuenta
 

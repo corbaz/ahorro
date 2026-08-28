@@ -86,11 +86,12 @@ Al cambiar el schema del estado, subí la versión de la clave (`/v3`) para no m
 
 ## Supabase (login + sync nube)
 
-- **Migración SQL**: `supabase/migrations/0001_init.sql` — tablas `planes`, `cuotas`, `historial` + RLS (`auth.uid() = user_id`)
-- **SDK JS**: `supabase-sync.js` — carga `@supabase/supabase-js` UMD por CDN, login Google, sync por usuario
+- **Migración SQL**: `supabase/migrations/0001_init.sql` (tablas `planes`, `cuotas`, `historial` + RLS `auth.uid() = user_id`) y `0002_multi_accounts.sql` (varias cuentas por mail: PK `id` en `planes`, columna `nombre`, `plan_id` en `cuotas`/`historial`, unique `(user_id, nombre)` y `(plan_id, n)`)
+- **SDK JS**: `supabase-sync.js` — carga `@supabase/supabase-js` UMD por CDN, login Google, listar/crear/abrir cuentas por plan
+- **Modelo de cuenta**: el login es la **puerta de entrada**; un mismo mail (auth.uid) puede tener **varias cuentas** distinguidas por el `nombre` que elige el usuario (p. ej. "Casa" y "Auto"). `state.planId` y `state.nombre` identifican la cuenta activa.
 - **Config local**: `supabase/config.json` (NO se versiona, está en .gitignore) — `{projectUrl, anonKey}`
 - Si `config.json` tiene valores placeholder (`XXXXX`), la app queda en modo local (sin login)
-- `syncToCloud()` se llama tras cada cambio de estado (pago, recálculo, import) si hay sesión
+- `syncToCloud()` se llama tras cada cambio de estado (pago, recálculo, import) si hay sesión **y** `state.planId`
 
 ## Próximos pasos sugeridos
 

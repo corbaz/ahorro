@@ -20,8 +20,8 @@ VER="v.$(TZ='America/Argentina/Buenos_Aires' date +%y%m%d.%H%M)"
 
 # reemplazar la constante APP_VERSION (línea con const APP_VERSION = "...";)
 if grep -qE 'const APP_VERSION = "v\.' "$HTML"; then
-  # macOS sed: usar archivo temporal explícito
-  sed -i '' -E "s/const APP_VERSION = \"v\.[0-9]+\.[0-9]+\";/const APP_VERSION = \"$VER\";/" "$HTML"
+  # sed portable (GNU/Linux + BSD/macOS): -i.bak y luego borrar el respaldo
+  sed -i.bak -E "s/const APP_VERSION = \"v\.[0-9]+\.[0-9]+\";/const APP_VERSION = \"$VER\";/" "$HTML" && rm -f "$HTML.bak"
 else
   echo "[bump-version] no se encontró const APP_VERSION en index.html" >&2
   exit 0
@@ -29,7 +29,7 @@ fi
 
 # estampar también en el badge del HTML (por si se renderizara sin JS)
 if grep -q 'id="navVer"' "$HTML"; then
-  sed -i '' -E "s/(id=\"navVer\"[^>]*)>v\.[0-9]+\.[0-9]+</\1>$VER</" "$HTML"
+  sed -i.bak -E "s/(id=\"navVer\"[^>]*)>v\.[0-9]+\.[0-9]+</\1>$VER</" "$HTML" && rm -f "$HTML.bak"
 fi
 
 # incluir el cambio en el commit que se está creando
