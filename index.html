@@ -245,7 +245,7 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 /* fila 2: monto grande con u$s separado a la izquierda */
 .cuota__amt{display:flex;align-items:baseline;gap:.55rem;font-family:var(--f-mono);font-size:1.35rem;font-weight:600;letter-spacing:-0.02em;color:var(--txt);line-height:1}
 .cuota__amt small{font-size:.62em;color:var(--txt-3);font-weight:500;letter-spacing:.02em}
-.cuota__fecha{font-family:var(--f-mono);font-size:.6rem;color:var(--txt-3);font-weight:500;letter-spacing:.02em;margin-top:-.35rem}
+.cuota__fecha{font-family:var(--f-mono);font-size:.6rem;color:var(--warn);font-weight:500;letter-spacing:.02em;margin-top:-.35rem}
 .cuota.is-paid .cuota__fecha{color:rgba(52,211,153,.6)}
 /* fila 3: barra de progreso de la cuota */
 .cuota__share{height:4px;border-radius:999px;background:rgba(251,113,133,.10);overflow:hidden}
@@ -410,7 +410,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1904</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1907</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -681,7 +681,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260828.1904";
+const APP_VERSION = "v.260828.1907";
 
 const state = {
   objetivo: 100000,
@@ -740,8 +740,8 @@ function rebalancearFechas(){
   const unpaid = pendientes().sort((a,b)=>a.n-b.n);
   if (!unpaid.length || fin <= hoy) return;
   const n = unpaid.length;
-  const paso = n > 1 ? (fin - hoy) / (n - 1) : 0;
-  unpaid.forEach((c,i) => { c.fecha = new Date(hoy.getTime() + i * paso).toISOString(); });
+  const paso = (fin - hoy) / n;
+  unpaid.forEach((c,i) => { c.fecha = new Date(hoy.getTime() + (i+1) * paso).toISOString(); });
 }
 
 /* ---- helpers ---- */
@@ -861,7 +861,7 @@ function registrarPagos(selectedNs){
       restUsd, acumUsd, restArs: restUsd * rate, acumArs: acumUsd * rate,
     });
   });
-  if (any) asignarFechasPlan();   // mantener el calendario de vencimientos (cadencia inicio→fin)
+  if (any) rebalancearFechas();   // las impagas recalculan su vencimiento; las pagadas conservan el suyo
   return any;
 }
 
