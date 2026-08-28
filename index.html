@@ -404,7 +404,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1711</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1729</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -676,7 +676,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260828.1711";
+const APP_VERSION = "v.260828.1729";
 
 const state = {
   objetivo: 100000,
@@ -768,8 +768,8 @@ function ritmo(){
   const pagoProxIdeal = new Date(ini.getTime() + pagadas * ritmoIdeal * msDia);
   // fecha del próximo pago para llegar a tiempo (hoy + ritmoAhora)
   const pagoProxNecesario = new Date(hoy.getTime() + ritmoAhora * msDia);
-  // desvío en días de la fecha estimada de llegada vs la fecha objetivo (>0 atrasado, <0 adelantado)
-  const diasDesvio = Math.round((fechaEstimada - fin) / msDia);
+  // desvío en días (estable): cuotas de adelanto/atraso × días por cuota (>0 adelantado, <0 atrasado)
+  const diasDesvio = Math.round(balance * ritmoIdeal);
   return { diasTotales, diasTranscurridos, diasRestantes, ritmoIdeal, ritmoAhora, ritmoReal, esperadas, pagadas, rezago, balance, enFecha, progresoTiempo, progresoCuotas, pend: pend.length, fechaEstimada, debeAcelerar, acelerarPct, pagoProxIdeal, pagoProxNecesario, diasDesvio };
 }
 
@@ -904,19 +904,24 @@ function renderRitmo(){
   document.getElementById('rRitmoIdealSub').textContent = 'próximo pago ' + fmtDay(r.pagoProxIdeal.toISOString());
   document.getElementById('rRitmoAhora').textContent = r.ritmoAhora>0 ? (r.ritmoAhora.toFixed(1)+' días') : '—';
   document.getElementById('rRitmoAhoraSub').textContent = r.ritmoAhora>0 ? ('cae ' + fmtDay(r.pagoProxNecesario.toISOString())) : 'para llegar a tiempo';
-  document.getElementById('rRitmoReal').textContent = r.pagadas>0 ? (r.ritmoReal.toFixed(1)+' días') : '—';
-  document.getElementById('rRitmoRealSub').textContent = r.pagadas>0
-    ? (r.diasDesvio>0 ? ('atrasado ' + r.diasDesvio + ' días')
-      : (r.diasDesvio<0 ? ('adelantado ' + Math.abs(r.diasDesvio) + ' días') : 'en fecha'))
-    : 'promedio real por cuota';
+  const elReal = document.getElementById('rRitmoReal'), elRealSub = document.getElementById('rRitmoRealSub');
+  if (r.pagadas >= 2){
+    elReal.textContent = r.ritmoReal.toFixed(1) + ' días';
+    elRealSub.textContent = r.diasDesvio>0
+      ? ('adelantado ' + r.diasDesvio + ' días')
+      : (r.diasDesvio<0 ? ('atrasado ' + Math.abs(r.diasDesvio) + ' días') : 'en fecha');
+  } else {
+    elReal.textContent = '—';
+    elRealSub.textContent = 'progresando (faltan pagos)';
+  }
   // balance con color
   const elBal = document.getElementById('rBalance'), elBalSub = document.getElementById('rBalanceSub');
   if (r.balance > 0){
     elBal.textContent = '+' + r.balance; elBal.className = 'ritmo__val ok';
-    elBalSub.textContent = 'cuotas adelantadas 🟢 (~' + Math.round(r.balance * r.ritmoIdeal) + ' días)';
+    elBalSub.textContent = 'cuotas adelantadas 🟢 (~' + Math.abs(Math.round(r.balance * r.ritmoIdeal)) + ' días)';
   } else if (r.balance < 0){
     elBal.textContent = r.balance; elBal.className = 'ritmo__val bad';
-    elBalSub.textContent = 'cuotas atrasadas 🔴 (~' + Math.round(Math.abs(r.balance) * r.ritmoIdeal) + ' días)';
+    elBalSub.textContent = 'cuotas atrasadas 🔴 (~' + Math.abs(Math.round(r.balance * r.ritmoIdeal)) + ' días)';
   } else {
     elBal.textContent = '0'; elBal.className = 'ritmo__val';
     elBalSub.textContent = 'justo en fecha';
