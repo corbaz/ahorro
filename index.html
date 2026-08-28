@@ -412,7 +412,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.2025</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.2030</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -673,7 +673,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260828.2025";
+const APP_VERSION = "v.260828.2030";
 
 const state = {
   objetivo: 100000,
@@ -762,14 +762,19 @@ function ritmo(){
   const pend = pendientes();
   const pagadas = state.cuotas.filter(c=>c.paid).length;
   const numDep = state.numDep;
-  // ritmo ideal: 1 cuota cada X días. Como cuota 1 = inicio y cuota N = fin, hay N-1 intervalos
-  const ritmoIdeal = numDep > 1 ? diasTotales / (numDep - 1) : 0;
+  // ritmo ideal (cadencia) = separación actual de las cuotas impagas (nueva cadencia al pagar)
+  const pendSorted = [...pend].sort((a,b)=>a.n-b.n);
+  let ritmoIdeal = numDep > 1 ? diasTotales / (numDep - 1) : 0;
+  if (pendSorted.length >= 2){
+    const f0 = new Date(pendSorted[0].fecha), fN = new Date(pendSorted[pendSorted.length-1].fecha);
+    if (!isNaN(f0) && !isNaN(fN) && fN > f0) ritmoIdeal = (fN - f0) / msDia / (pendSorted.length - 1);
+  }
   // ritmo necesario ahora: con lo que queda, 1 cuota cada Y días
   const ritmoAhora = pend.length > 0 ? diasRestantes / pend.length : 0;
-  // cuotas esperadas a hoy por CADENCIA: vence la N.ª el día (N-1)*cadencia,
-  // así que a hoy (día 0 = arranque) ya vence la cuota 1 → esperadas >= 1
+  // cuotas esperadas: día 0 y sin cuotas pagadas → 0 (todavía no arrancaste el pago);
+  // si no, la cuota que toca por cadencia
   const pctTiempo = diasTotales > 0 ? diasTranscurridos / diasTotales : 0;
-  const esperadas = numDep > 0 ? Math.min(numDep, diasTranscurridos === 0 ? 0 : (Math.floor(diasTranscurridos / (ritmoIdeal||1)) + 1)) : 0;
+  const esperadas = numDep > 0 ? Math.min(numDep, (diasTranscurridos === 0 && pagadas === 0) ? 0 : (Math.floor(diasTranscurridos / (ritmoIdeal||1)) + 1)) : 0;
   // estado de fecha
   const rezago = esperadas - pagadas;  // >0 => atrasado
   const enFecha = rezago <= 0;
@@ -1492,7 +1497,7 @@ $("fileImport").addEventListener("change", e=>{ if(e.target.files[0]) importar(e
 $("btnCloseCelebrate").addEventListener("click", ()=> celebrate.classList.remove("show"));
 $("btnBackup").addEventListener("click", ()=> hacerBackup(false));
 $("btnTheme").addEventListener("click", toggleTheme);
-$("btnClearHist").addEventListener("click", ()=>{ if(state.historial.length){ state.historial=[]; hacerBackup(); syncToCloud(); render(); toast("Historial vaciado · las cuotas pagadas no se tocan"); } });
+$("btnClearHist").addEventListener("click", ()=>{ state.cuotas = resetear(state.objetivo, state.numDep); asignarFechasPlan(); state.historial=[]; hacerBackup(); syncToCloud(); render(); toast("Plan reiniciado (igual que Recalcular) · historial limpio"); });
 filters.addEventListener("click", e=>{ const b=e.target.closest(".chip"); if(b) setFilter(b.dataset.f); });
 // ordenar historial al clickear los headers Fecha / N.º cuota
 document.querySelectorAll('#ledgerT th.th-sort').forEach(th=>{
