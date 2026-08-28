@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Reto de Ahorro · Dashboard</title>
 <meta name="description" content="Reto de Ahorro — seguí tu plan de ahorro cuota por cuota, con historial de pagos y conversión a pesos." />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230B1210'/%3E%3Ccircle cx='30' cy='38' r='18' fill='%234CE0A3'/%3E%3Crect x='25' y='23' width='11' height='3.2' rx='1.6' fill='%230B1210'/%3E%3Ccircle cx='50' cy='43' r='6' fill='%2334A853'/%3E%3Ccircle cx='48' cy='42' r='1' fill='%230B1210'/%3E%3Ccircle cx='52' cy='42' r='1' fill='%230B1210'/%3E%3Cpath d='M25 25 L29 17 L34 24 Z' fill='%2334A853'/%3E%3Ccircle cx='35' cy='33' r='1.7' fill='%230B1210'/%3E%3Crect x='21' y='54' width='5' height='7' rx='2' fill='%2334A853'/%3E%3Crect x='34' y='54' width='5' height='7' rx='2' fill='%2334A853'/%3E%3Ccircle cx='55' cy='24' r='7' fill='%23FBBC05'/%3E%3Cpath d='M52 24h6' stroke='%230B1210' stroke-width='1.4'/%3E%3C/svg%3E" />
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230B1210'/%3E%3Ccircle cx='30' cy='38' r='18' fill='%234CE0A3'/%3E%3Crect x='25' y='23' width='11' height='3.2' rx='1.6' fill='%230B1210'/%3E%3Ccircle cx='50' cy='43' r='6' fill='%2334A853'/%3E%3Ccircle cx='48' cy='42' r='1' fill='%230B1210'/%3E%3Ccircle cx='52' cy='42' r='1' fill='%230B1210'/%3E%3Cpath d='M25 25 L29 17 L34 24 Z' fill='%2334A853'/%3E%3Ccircle cx='35' cy='33' r='1.7' fill='%230B1210'/%3E%3Crect x='21' y='54' width='5' height='7' rx='2' fill='%2334A853'/%3E%3Crect x='34' y='54' width='5' height='7' rx='2' fill='%2334A853'/%3E%3Ccircle cx='55' cy='24' r='7' fill='%23FBBC05'/%3E%3Cpath d='M52 24h6' stroke='%230B1210' stroke-width='1.4'/%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -152,7 +154,7 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 .input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(52,211,153,.16)}
 .input__wrap{position:relative;display:flex;align-items:center}
 .input__wrap .pre{position:absolute;left:1rem;font-family:var(--f-mono);color:var(--txt-3);font-size:1.05rem;font-weight:500;pointer-events:none}
-.input__wrap .input{padding-left:2.2rem}
+.input__wrap .input{padding-left:2.9rem}
 .cfg__row{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
 .cfg__actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem}
 .cfg__note{font-size:.72rem;color:var(--txt-3);line-height:1.5}
@@ -349,8 +351,9 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
 .auth-card .auth-note{font-size:.72rem;color:var(--txt-3);margin-top:1rem}
 /* account picker (elegir / crear cuenta) */
 .acc-list{display:flex;flex-direction:column;gap:.6rem;margin:0 0 .9rem;max-height:46vh;overflow:auto;text-align:left}
-.acc-item{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.85rem 1rem;border-radius:calc(var(--radius) - .9rem);border:1px solid var(--hairline);background:var(--surface-2);cursor:pointer;transition:border-color .25s var(--ease),background .25s var(--ease),transform .25s var(--ease);width:100%}
-.acc-item:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 6%,var(--surface-2));transform:translateY(-1px)}
+.acc-item{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.85rem 1rem;border-radius:calc(var(--radius) - .9rem);border:1px solid var(--hairline);background:var(--surface-2);cursor:pointer;transition:border-color .25s var(--ease),background .25s var(--ease),transform .25s var(--ease),box-shadow .25s var(--ease);width:100%}
+.acc-item:hover{border-color:color-mix(in srgb,var(--accent) 40%,var(--hairline));background:color-mix(in srgb,var(--accent) 4%,var(--surface-2));transform:translateY(-1px);box-shadow:0 10px 26px -18px color-mix(in srgb,var(--accent) 60%,transparent)}
+.acc-item:focus-visible{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
 .acc-item .acc-name{display:block;font-weight:700;font-size:.95rem;letter-spacing:-0.01em}
 .acc-item .acc-meta{display:block;font-size:.7rem;color:var(--txt-3);margin-top:.15rem}
 .acc-item .acc-arrow{color:var(--txt-3);flex:none}
@@ -383,7 +386,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1457</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1602</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -530,7 +533,17 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     <h2>Reto de Ahorro</h2>
     <p>Ingresá con tu mail de Google para crear o abrir tu cuenta. Tu progreso se guarda en la nube.</p>
     <button class="btn btn--google" id="btnGoogleLogin" style="width:100%;justify-content:center">
-      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.5 12.2c0-.7-.1-1.4-.2-2H12v4h5.9c-.3 1.3-1 2.4-2.2 3.1v2.6h3.5c2-1.9 3.3-4.7 3.3-7.7z"/><path fill="#34A853" d="M12 23c2.9 0 5.4-1 7.2-2.6l-3.5-2.7c-1 .7-2.2 1-3.7 1-2.9 0-5.3-1.9-6.2-4.6H2.2v2.8C4 20.1 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.8 14.7c-.2-.7-.4-1.5-.4-2.2s.1-1.5.4-2.2V9.5H2.2C1.4 11 1 12.5 1 14.5s.4 3.5 1.2 5l3.6-2.8z"/><path fill="#EA4335" d="M12 5.6c1.6 0 3 .5 4.1 1.6l3-3C17 2.5 14.7 1.5 12 1.5 7.7 1.5 4 4.4 2.6 8.5l3.6 2.8c.9-2.7 3.3-4.6 6.2-4.6z"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><defs>
+        <linearGradient id="gB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6DA4FF"/><stop offset="1" stop-color="#4285F4"/></linearGradient>
+        <linearGradient id="gG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4CE0A3"/><stop offset="1" stop-color="#34A853"/></linearGradient>
+        <linearGradient id="gY" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBD75B"/><stop offset="1" stop-color="#FBBC05"/></linearGradient>
+        <linearGradient id="gR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF7B70"/><stop offset="1" stop-color="#EA4335"/></linearGradient>
+      </defs>
+      <path fill="url(#gB)" d="M22.5 12.2c0-.7-.1-1.4-.2-2H12v4h5.9c-.3 1.3-1 2.4-2.2 3.1v2.6h3.5c2-1.9 3.3-4.7 3.3-7.7z"/>
+      <path fill="url(#gG)" d="M12 23c2.9 0 5.4-1 7.2-2.6l-3.5-2.7c-1 .7-2.2 1-3.7 1-2.9 0-5.3-1.9-6.2-4.6H2.2v2.8C4 20.1 7.7 23 12 23z"/>
+      <path fill="url(#gY)" d="M5.8 14.7c-.2-.7-.4-1.5-.4-2.2s.1-1.5.4-2.2V9.5H2.2C1.4 11 1 12.5 1 14.5s.4 3.5 1.2 5l3.6-2.8z"/>
+      <path fill="url(#gR)" d="M12 5.6c1.6 0 3 .5 4.1 1.6l3-3C17 2.5 14.7 1.5 12 1.5 7.7 1.5 4 4.4 2.6 8.5l3.6 2.8c.9-2.7 3.3-4.6 6.2-4.6z"/>
+      </svg>
       Ingresar con Google
     </button>
     <p class="auth-note">Un mismo mail puede tener varias cuentas con nombres distintos (p. ej. "Casa" y "Auto").</p>
@@ -637,7 +650,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260828.1457";
+const APP_VERSION = "v.260828.1602";
 
 const state = {
   objetivo: 100000,
@@ -1253,10 +1266,11 @@ function bootLocal(){
   async function doCreateAccount(nombre){
     const acc = await window.SupaSync.createAccount(nombre);
     if (!acc){ toast('No se pudo crear la cuenta'); return; }
-    // arrancar con el plan de ejemplo
+    // arrancar en cero: plan con las cuotas pendientes, sin pagos ni historial de ejemplo
     state.objetivo=100000; state.numDep=100; state.dolar=1;
     state.fechaInicio=todayISO(); state.fechaFin=null;
-    seedNewPlan();
+    state.cuotas = resetear(state.objetivo, state.numDep);  // todas pendientes
+    state.historial = [];                                   // sin registros
     state.planId=acc.id; state.nombre=acc.nombre;
     openAccountDone();
     syncToCloud(); // persistir el plan recién creado
