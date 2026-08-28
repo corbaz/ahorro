@@ -242,6 +242,8 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 /* fila 2: monto grande con u$s separado a la izquierda */
 .cuota__amt{display:flex;align-items:baseline;gap:.55rem;font-family:var(--f-mono);font-size:1.35rem;font-weight:600;letter-spacing:-0.02em;color:var(--txt);line-height:1}
 .cuota__amt small{font-size:.62em;color:var(--txt-3);font-weight:500;letter-spacing:.02em}
+.cuota__fecha{font-family:var(--f-mono);font-size:.6rem;color:var(--txt-3);font-weight:500;letter-spacing:.02em;margin-top:-.35rem}
+.cuota.is-paid .cuota__fecha{color:rgba(52,211,153,.6)}
 /* fila 3: barra de progreso de la cuota */
 .cuota__share{height:4px;border-radius:999px;background:rgba(251,113,133,.10);overflow:hidden}
 .cuota__share i{display:block;height:100%;width:0%;background:linear-gradient(90deg,rgba(251,113,133,.6),var(--warn));transition:width .8s var(--ease-out)}
@@ -405,7 +407,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1741</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1812</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -677,7 +679,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260828.1741";
+const APP_VERSION = "v.260828.1812";
 
 const state = {
   objetivo: 100000,
@@ -715,6 +717,31 @@ function resetear(objetivo, numDep){
   return cuotas;
 }
 
+/* ---- helpers de fechas de vencimiento ---- */
+// Asigna fecha de pago a cada cuota: cuota 1 = inicio, última = fin, cadencia en el medio
+function asignarFechasPlan(){
+  if (!state.fechaInicio || !state.fechaFin || state.numDep < 1) { state.cuotas.forEach(c=>{ if(!c.fecha) c.fecha=null; }); return; }
+  const ini = new Date(state.fechaInicio), fin = new Date(state.fechaFin);
+  if (isNaN(ini) || isNaN(fin)) { state.cuotas.forEach(c=>{ c.fecha=null; }); return; }
+  const num = state.numDep;
+  const paso = num > 1 ? (fin - ini) / (num - 1) : 0;
+  state.cuotas.forEach(c => {
+    c.fecha = new Date(ini.getTime() + (c.n - 1) * paso).toISOString();
+  });
+}
+// Rearma las fechas de las cuotas impagas, distribuyéndolas desde hoy hasta la fecha final
+function rebalancearFechas(){
+  if (!state.fechaFin) return;
+  const fin = new Date(state.fechaFin);
+  if (isNaN(fin)) return;
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const unpaid = pendientes().sort((a,b)=>a.n-b.n);
+  if (!unpaid.length || fin <= hoy) return;
+  const n = unpaid.length;
+  const paso = n > 1 ? (fin - hoy) / (n - 1) : 0;
+  unpaid.forEach((c,i) => { c.fecha = new Date(hoy.getTime() + i * paso).toISOString(); });
+}
+
 /* ---- helpers ---- */
 const pendientes = () => state.cuotas.filter(c => !c.paid);
 const sumUsd = (arr) => arr.reduce((s,c)=>s + c.monto, 0);
@@ -741,8 +768,8 @@ function ritmo(){
   const pend = pendientes();
   const pagadas = state.cuotas.filter(c=>c.paid).length;
   const numDep = state.numDep;
-  // ritmo ideal: 1 cuota cada X días (plan original)
-  const ritmoIdeal = numDep > 0 ? diasTotales / numDep : 0;
+  // ritmo ideal: 1 cuota cada X días. Como cuota 1 = inicio y cuota N = fin, hay N-1 intervalos
+  const ritmoIdeal = numDep > 1 ? diasTotales / (numDep - 1) : 0;
   // ritmo necesario ahora: con lo que queda, 1 cuota cada Y días
   const ritmoAhora = pend.length > 0 ? diasRestantes / pend.length : 0;
   // cuotas esperadas a hoy por CADENCIA: vence la N.ª el día (N-1)*cadencia,
@@ -832,6 +859,7 @@ function registrarPagos(selectedNs){
       restUsd, acumUsd, restArs: restUsd * rate, acumArs: acumUsd * rate,
     });
   });
+  if (any) rebalancearFechas();   // rearmar las fechas de las cuotas impagas
   return any;
 }
 
@@ -851,6 +879,7 @@ function recalcular(){
     texto: `--- NUEVO PLAN: objetivo u$s ${fmtNum(obj)}  |  ${num} cuotas  |  ${fmtDate(nowIso())} ---`
   });
   state.cuotas = resetear(obj, num);   // regenera TODAS las cuotas (pendientes)
+  asignarFechasPlan();                 // fecha de vencimiento de cada cuota
   hacerBackup(); syncToCloud();
   render();
   toast("Plan recalculado y registrado en el historial");
@@ -1081,6 +1110,7 @@ function renderCuotas(){
     <div class="cuota${c.paid?" is-paid":""}" data-n="${c.n}">
       <div class="cuota__top"><span class="cuota__n">N.º ${c.n}</span><span class="cuota__lvl">${nivelLabel(c.n,state.numDep)}</span></div>
       <div class="cuota__amt"><small>u$s</small><span>${c.monto.toLocaleString("es-AR")}</span></div>
+      ${c.fecha ? `<div class="cuota__fecha">vence ${fmtDay(c.fecha)}</div>` : ''}
       <div class="cuota__share"><i style="width:${(c.monto/maxMonto*100).toFixed(1)}%"></i></div>
       <div class="cuota__foot"><span class="cuota__status">${c.paid?"Pagada":"Pendiente"}</span><span class="cuota__check" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-10"/></svg></span></div>
     </div>`).join("");
@@ -1370,6 +1400,7 @@ function bootLocal(){
     if (!snap){ toast('No se pudo cargar esa cuenta'); return; }
     loadCloud(snap); state.planId=planId; state.nombre=snap.nombre;
     ensureAccMarker();
+    asignarFechasPlan();
     openAccountDone();
   }
 
