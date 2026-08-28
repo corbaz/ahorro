@@ -119,7 +119,7 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 .b-grid{grid-column:span 12}
 .b-hist{grid-column:span 12}
 .b-export{grid-column:span 12}
-@media(max-width:880px){.bento>*{grid-column:span 12 !important;grid-row:auto !important}.b-kpis{display:flex;flex-direction:column;gap:clamp(.7rem,1.6vw,1.1rem);grid-template-rows:none}}
+@media(max-width:880px){.bento>*{grid-column:span 12 !important;grid-row:auto !important;min-width:0 !important}.b-kpis{display:flex;flex-direction:column;gap:clamp(.7rem,1.6vw,1.1rem);grid-template-rows:none}}
 
 /* kpi */
 .kpi{border-radius:calc(var(--radius) - .6rem);padding:1.15rem 1.25rem;background:var(--surface);border:1px solid var(--hairline);display:flex;flex-direction:column;justify-content:center;gap:.55rem}
@@ -388,7 +388,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
 .sec h2{font-size:1.4rem;font-weight:700;letter-spacing:-0.02em}
 .foot{margin-top:3rem;text-align:center;font-size:.72rem;color:var(--txt-3);font-weight:500}
 .foot b{color:var(--txt-2);font-weight:600}
-@media(max-width:560px){.nav{border-radius:1.4rem;padding:.5rem .5rem .5rem 1rem}.nav__sub{display:none}.cfg__row{grid-template-columns:1fr}.fx__grid{grid-template-columns:1fr}.modal__totals{grid-template-columns:1fr}.grid-cuotas{grid-template-columns:repeat(auto-fill,minmax(9rem,1fr))}.ledger__t{font-size:.7rem}.ledger__t thead th{font-size:.56rem}.auth-card{width:min(100%,100%)}.auth-card__inner{padding:1.4rem}.auth-card h2{font-size:1.15rem}.auth-card p{font-size:.8rem}.acc-list{max-height:50vh;gap:.5rem}.acc-item{padding:.75rem .85rem}}
+@media(max-width:560px){.nav{border-radius:1.4rem;padding:.5rem .6rem;gap:.5rem;flex-wrap:wrap}.nav__sub{display:none}.nav__actions{flex-wrap:wrap;gap:.3rem}.nav__ver{display:none}.cfg__row{grid-template-columns:1fr}.fx__grid{grid-template-columns:1fr}.modal__totals{grid-template-columns:1fr}.grid-cuotas{grid-template-columns:repeat(auto-fill,minmax(9rem,1fr))}.ledger__t{font-size:.7rem}.ledger__t thead th{font-size:.56rem}.auth-card{width:min(100%,100%)}.auth-card__inner{padding:1.4rem}.auth-card h2{font-size:1.15rem}.auth-card p{font-size:.8rem}.acc-list{max-height:50vh;gap:.5rem}.acc-item{padding:.75rem .85rem}}
 @media(prefers-reduced-motion:reduce){*{transition-duration:.01ms !important;animation-duration:.01ms !important}.reveal{opacity:1;transform:none}}
 </style>
 </head>
@@ -404,7 +404,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1646</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1711</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -473,10 +473,10 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
       <div class="card__head"><div><div class="card__title">Ritmo de ahorro</div><div class="card__hint">¿Vas en fecha o estás quedándote atrás?</div></div><span class="eyebrow" id="ritmoEstado">—</span></div>
       <div class="ritmo">
         <div class="ritmo__kpis">
-          <div class="ritmo__kpi"><span class="ritmo__label">Días restantes</span><span class="ritmo__val" id="rDiasRest">—</span></div>
-          <div class="ritmo__kpi"><span class="ritmo__label">Ritmo ideal</span><span class="ritmo__val" id="rRitmoIdeal">—</span><span class="ritmo__sub">1 cuota cada … días</span></div>
-          <div class="ritmo__kpi"><span class="ritmo__label">Ritmo necesario ahora</span><span class="ritmo__val" id="rRitmoAhora">—</span><span class="ritmo__sub">para llegar a tiempo</span></div>
-          <div class="ritmo__kpi"><span class="ritmo__label">Ritmo real</span><span class="ritmo__val" id="rRitmoReal">—</span><span class="ritmo__sub">promedio real por cuota</span></div>
+          <div class="ritmo__kpi"><span class="ritmo__label">Días restantes</span><span class="ritmo__val" id="rDiasRest">—</span><span class="ritmo__sub" id="rDiasRestSub">—</span></div>
+          <div class="ritmo__kpi"><span class="ritmo__label">Ritmo ideal</span><span class="ritmo__val" id="rRitmoIdeal">—</span><span class="ritmo__sub" id="rRitmoIdealSub">1 cuota cada … días</span></div>
+          <div class="ritmo__kpi"><span class="ritmo__label">Ritmo necesario ahora</span><span class="ritmo__val" id="rRitmoAhora">—</span><span class="ritmo__sub" id="rRitmoAhoraSub">para llegar a tiempo</span></div>
+          <div class="ritmo__kpi"><span class="ritmo__label">Ritmo real</span><span class="ritmo__val" id="rRitmoReal">—</span><span class="ritmo__sub" id="rRitmoRealSub">promedio real por cuota</span></div>
           <div class="ritmo__kpi"><span class="ritmo__label">Balance</span><span class="ritmo__val" id="rBalance">—</span><span class="ritmo__sub" id="rBalanceSub">—</span></div>
         </div>
         <div class="ritmo__bar">
@@ -676,7 +676,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260828.1646";
+const APP_VERSION = "v.260828.1711";
 
 const state = {
   objetivo: 100000,
@@ -764,7 +764,13 @@ function ritmo(){
   const debeAcelerar = ritmoReal > ritmoAhora && pend.length > 0;
   // diferencia de ritmo (cuánto más rápido debe pagar)
   const acelerarPct = (ritmoAhora > 0 && ritmoReal > 0) ? Math.round((1 - ritmoAhora / ritmoReal) * 100) : 0;
-  return { diasTotales, diasTranscurridos, diasRestantes, ritmoIdeal, ritmoAhora, ritmoReal, esperadas, pagadas, rezago, balance, enFecha, progresoTiempo, progresoCuotas, pend: pend.length, fechaEstimada, debeAcelerar, acelerarPct };
+  // fecha del próximo pago según el ritmo ideal (cuota pagadas+1 en el calendario)
+  const pagoProxIdeal = new Date(ini.getTime() + pagadas * ritmoIdeal * msDia);
+  // fecha del próximo pago para llegar a tiempo (hoy + ritmoAhora)
+  const pagoProxNecesario = new Date(hoy.getTime() + ritmoAhora * msDia);
+  // desvío en días de la fecha estimada de llegada vs la fecha objetivo (>0 atrasado, <0 adelantado)
+  const diasDesvio = Math.round((fechaEstimada - fin) / msDia);
+  return { diasTotales, diasTranscurridos, diasRestantes, ritmoIdeal, ritmoAhora, ritmoReal, esperadas, pagadas, rezago, balance, enFecha, progresoTiempo, progresoCuotas, pend: pend.length, fechaEstimada, debeAcelerar, acelerarPct, pagoProxIdeal, pagoProxNecesario, diasDesvio };
 }
 
 /* ---- Guardar / restaurar estado (localStorage) ---- */
@@ -893,17 +899,24 @@ function renderRitmo(){
   if (elIni) elIni.textContent = fmtDay(state.fechaInicio);
   // KPIs
   document.getElementById('rDiasRest').textContent = r.diasRestantes + ' días';
+  document.getElementById('rDiasRestSub').textContent = 'hasta ' + fmtDay(state.fechaFin);
   document.getElementById('rRitmoIdeal').textContent = r.ritmoIdeal.toFixed(1) + ' días';
+  document.getElementById('rRitmoIdealSub').textContent = 'próximo pago ' + fmtDay(r.pagoProxIdeal.toISOString());
   document.getElementById('rRitmoAhora').textContent = r.ritmoAhora>0 ? (r.ritmoAhora.toFixed(1)+' días') : '—';
+  document.getElementById('rRitmoAhoraSub').textContent = r.ritmoAhora>0 ? ('cae ' + fmtDay(r.pagoProxNecesario.toISOString())) : 'para llegar a tiempo';
   document.getElementById('rRitmoReal').textContent = r.pagadas>0 ? (r.ritmoReal.toFixed(1)+' días') : '—';
+  document.getElementById('rRitmoRealSub').textContent = r.pagadas>0
+    ? (r.diasDesvio>0 ? ('atrasado ' + r.diasDesvio + ' días')
+      : (r.diasDesvio<0 ? ('adelantado ' + Math.abs(r.diasDesvio) + ' días') : 'en fecha'))
+    : 'promedio real por cuota';
   // balance con color
   const elBal = document.getElementById('rBalance'), elBalSub = document.getElementById('rBalanceSub');
   if (r.balance > 0){
     elBal.textContent = '+' + r.balance; elBal.className = 'ritmo__val ok';
-    elBalSub.textContent = 'cuotas adelantadas 🟢';
+    elBalSub.textContent = 'cuotas adelantadas 🟢 (~' + Math.round(r.balance * r.ritmoIdeal) + ' días)';
   } else if (r.balance < 0){
     elBal.textContent = r.balance; elBal.className = 'ritmo__val bad';
-    elBalSub.textContent = 'cuotas atrasadas 🔴';
+    elBalSub.textContent = 'cuotas atrasadas 🔴 (~' + Math.round(Math.abs(r.balance) * r.ritmoIdeal) + ' días)';
   } else {
     elBal.textContent = '0'; elBal.className = 'ritmo__val';
     elBalSub.textContent = 'justo en fecha';
