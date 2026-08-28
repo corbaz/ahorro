@@ -412,7 +412,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.2030</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.2050</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -673,7 +673,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260828.2030";
+const APP_VERSION = "v.260828.2050";
 
 const state = {
   objetivo: 100000,
@@ -1019,13 +1019,16 @@ function abrirCadencia(){
     const alerta = r.debeAcelerar
       ? `<div class="cadencia__alert bad"><svg viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg> Debés acelerar: tu ritmo real (${r.ritmoReal.toFixed(1)}d/cuota) es más lento del necesario (${r.ritmoAhora.toFixed(1)}d/cuota). Pagá ${r.acelerarPct}% más rápido.</div>`
       : `<div class="cadencia__alert ok"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-10"/></svg> Vas bien: tu ritmo real (${r.ritmoReal.toFixed(1)}d/cuota) es igual o más rápido de lo necesario. 🟢</div>`;
+    const primeraPend = pendientes().sort((a,b)=>a.n-b.n)[0];
+    const proxVence = (primeraPend && primeraPend.fecha) ? fmtDay(primeraPend.fecha) : (state.fechaFin ? fmtDay(state.fechaFin) : '—');
+    const ritmoRealTxt = r.diasDesvio === 0 ? 'en fecha' : (r.diasDesvio > 0 ? 'adelantado' : 'atrasado') + ' ' + Math.abs(r.diasDesvio) + 'd';
     body.innerHTML = `
       <div class="cadencia">
         <div class="cadencia__kpis">
           <div class="cadencia__kpi"><span class="ritmo__label">Cuotas pagadas</span><span class="ritmo__val ok">${r.pagadas} / ${state.numDep}</span></div>
           <div class="cadencia__kpi"><span class="ritmo__label">Cuotas esperadas a hoy</span><span class="ritmo__val">${r.esperadas}</span></div>
-          <div class="cadencia__kpi"><span class="ritmo__label">Ritmo real</span><span class="ritmo__val">${r.ritmoReal.toFixed(1)}d</span></div>
-          <div class="cadencia__kpi"><span class="ritmo__label">Estimado de llegada</span><span class="ritmo__val" style="font-size:.95rem">${fmtDay(r.fechaEstimada.toISOString())}</span></div>
+          <div class="cadencia__kpi"><span class="ritmo__label">Avance</span><span class="ritmo__val">${ritmoRealTxt}</span></div>
+          <div class="cadencia__kpi"><span class="ritmo__label">Próximo pago</span><span class="ritmo__val" style="font-size:.95rem">${proxVence}</span></div>
         </div>
         <div class="cadencia__chart">${chartCadencia(r)}</div>
         <div class="cadencia__row"><span>Inicio del reto</span><b>${fmtDay(state.fechaInicio)}</b></div>
@@ -1504,7 +1507,7 @@ document.querySelectorAll('#ledgerT th.th-sort').forEach(th=>{
   th.addEventListener("click", ()=> toggleSort(th.dataset.sort));
 });
 // flujo: "Pagar cuotas" abre primero el submodal de cotización, luego el de pago
-$("btnPagar").addEventListener("click", abrirSubRate);
+$("btnPagar").addEventListener("click", ()=> abrirSubRate());
 $("btnClosePagar").addEventListener("click", cerrarPagar);
 $("btnCerrar").addEventListener("click", cerrarPagar);
 $("btnComprar").addEventListener("click", comprar);
