@@ -190,6 +190,7 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 .ritmo__val{font-family:var(--f-mono);font-size:1.3rem;font-weight:600;letter-spacing:-0.02em;color:var(--txt)}
 .ritmo__val.ok{color:var(--accent)}
 .ritmo__val.bad{color:var(--warn)}
+.ritmo__val--status{font-size:1.02rem;letter-spacing:-0.01em}
 .ritmo__sub{font-size:.64rem;color:var(--txt-3);font-weight:500}
 .ritmo__bar{display:flex;flex-direction:column;gap:.6rem}
 .ritmo__bar-label{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:.7rem;color:var(--txt-3);font-weight:500}
@@ -404,7 +405,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1729</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1741</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -676,7 +677,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260828.1729";
+const APP_VERSION = "v.260828.1741";
 
 const state = {
   objetivo: 100000,
@@ -744,9 +745,10 @@ function ritmo(){
   const ritmoIdeal = numDep > 0 ? diasTotales / numDep : 0;
   // ritmo necesario ahora: con lo que queda, 1 cuota cada Y días
   const ritmoAhora = pend.length > 0 ? diasRestantes / pend.length : 0;
-  // cuotas esperadas a hoy (proporcional al tiempo transcurrido)
+  // cuotas esperadas a hoy por CADENCIA: vence la N.ª el día (N-1)*cadencia,
+  // así que a hoy (día 0 = arranque) ya vence la cuota 1 → esperadas >= 1
   const pctTiempo = diasTotales > 0 ? diasTranscurridos / diasTotales : 0;
-  const esperadas = Math.min(numDep, Math.floor(pctTiempo * numDep));
+  const esperadas = numDep > 0 ? Math.min(numDep, Math.max(0, Math.floor(diasTranscurridos / (ritmoIdeal||1)) + 1)) : 0;
   // estado de fecha
   const rezago = esperadas - pagadas;  // >0 => atrasado
   const enFecha = rezago <= 0;
@@ -766,8 +768,10 @@ function ritmo(){
   const acelerarPct = (ritmoAhora > 0 && ritmoReal > 0) ? Math.round((1 - ritmoAhora / ritmoReal) * 100) : 0;
   // fecha del próximo pago según el ritmo ideal (cuota pagadas+1 en el calendario)
   const pagoProxIdeal = new Date(ini.getTime() + pagadas * ritmoIdeal * msDia);
-  // fecha del próximo pago para llegar a tiempo (hoy + ritmoAhora)
-  const pagoProxNecesario = new Date(hoy.getTime() + ritmoAhora * msDia);
+  // fecha del próximo pago: si vas atrasado, la que toca para recuperar; si no, la del calendario
+  const pagoProxNecesario = rezago > 0
+    ? new Date(hoy.getTime() + ritmoAhora * msDia)
+    : pagoProxIdeal;
   // desvío en días (estable): cuotas de adelanto/atraso × días por cuota (>0 adelantado, <0 atrasado)
   const diasDesvio = Math.round(balance * ritmoIdeal);
   return { diasTotales, diasTranscurridos, diasRestantes, ritmoIdeal, ritmoAhora, ritmoReal, esperadas, pagadas, rezago, balance, enFecha, progresoTiempo, progresoCuotas, pend: pend.length, fechaEstimada, debeAcelerar, acelerarPct, pagoProxIdeal, pagoProxNecesario, diasDesvio };
@@ -902,17 +906,25 @@ function renderRitmo(){
   document.getElementById('rDiasRestSub').textContent = 'hasta ' + fmtDay(state.fechaFin);
   document.getElementById('rRitmoIdeal').textContent = r.ritmoIdeal.toFixed(1) + ' días';
   document.getElementById('rRitmoIdealSub').textContent = 'próximo pago ' + fmtDay(r.pagoProxIdeal.toISOString());
-  document.getElementById('rRitmoAhora').textContent = r.ritmoAhora>0 ? (r.ritmoAhora.toFixed(1)+' días') : '—';
-  document.getElementById('rRitmoAhoraSub').textContent = r.ritmoAhora>0 ? ('cae ' + fmtDay(r.pagoProxNecesario.toISOString())) : 'para llegar a tiempo';
-  const elReal = document.getElementById('rRitmoReal'), elRealSub = document.getElementById('rRitmoRealSub');
-  if (r.pagadas >= 2){
-    elReal.textContent = r.ritmoReal.toFixed(1) + ' días';
-    elRealSub.textContent = r.diasDesvio>0
-      ? ('adelantado ' + r.diasDesvio + ' días')
-      : (r.diasDesvio<0 ? ('atrasado ' + Math.abs(r.diasDesvio) + ' días') : 'en fecha');
+  const elAhora = document.getElementById('rRitmoAhora'), elAhoraSub = document.getElementById('rRitmoAhoraSub');
+  if (r.rezago > 0){
+    elAhora.textContent = r.ritmoAhora>0 ? (r.ritmoAhora.toFixed(1)+' días') : '—';
+    elAhora.className = 'ritmo__val bad';
+    elAhoraSub.textContent = r.ritmoAhora>0 ? ('1 cada '+r.ritmoAhora.toFixed(1)+' días para recuperar') : 'para recuperar';
   } else {
-    elReal.textContent = '—';
-    elRealSub.textContent = 'progresando (faltan pagos)';
+    elAhora.textContent = 'cadencia'; elAhora.className = 'ritmo__val ok ritmo__val--status';
+    elAhoraSub.textContent = '1 cada '+r.ritmoIdeal.toFixed(1)+' días · cae '+fmtDay(r.pagoProxNecesario.toISOString());
+  }
+  const elReal = document.getElementById('rRitmoReal'), elRealSub = document.getElementById('rRitmoRealSub');
+  if (r.diasDesvio === 0){
+    elReal.textContent = 'cadencia'; elReal.className = 'ritmo__val ok ritmo__val--status';
+    elRealSub.textContent = '1 cuota cada ' + r.ritmoIdeal.toFixed(1) + ' días';
+  } else if (r.diasDesvio > 0){
+    elReal.textContent = 'adelantado'; elReal.className = 'ritmo__val ok ritmo__val--status';
+    elRealSub.textContent = r.diasDesvio + ' día(s) de ventaja';
+  } else {
+    elReal.textContent = 'atrasado'; elReal.className = 'ritmo__val bad ritmo__val--status';
+    elRealSub.textContent = Math.abs(r.diasDesvio) + ' día(s) de atraso';
   }
   // balance con color
   const elBal = document.getElementById('rBalance'), elBalSub = document.getElementById('rBalanceSub');
