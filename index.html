@@ -362,9 +362,11 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
 .acc-item .acc-head{display:flex;align-items:baseline;gap:.5rem;flex-wrap:wrap}
 .acc-item .acc-name{font-weight:700;font-size:.95rem;letter-spacing:-0.01em;color:var(--accent)}
 .acc-item .acc-obj{font-size:.72rem;color:var(--txt-3);font-weight:500}
-.acc-item .acc-prog-label{display:block;font-size:.66rem;font-weight:600;letter-spacing:.03em;color:var(--txt-3);margin-top:.4rem}
+.acc-item .acc-prog-row{display:flex;align-items:baseline;gap:.4rem;margin-top:.4rem}
+.acc-item .acc-prog-label{font-size:.66rem;font-weight:600;letter-spacing:.03em;color:var(--txt-3)}
+.acc-item .acc-cuotas{font-size:.68rem;font-weight:600;color:var(--txt-2)}
 .acc-item .acc-meta{display:block;font-size:.7rem;color:var(--txt-3);margin-top:.15rem}
-.acc-item .acc-meta--prog{display:block;font-size:.74rem;color:var(--accent);margin-top:.03rem}
+.acc-item .acc-meta--prog{display:block;font-size:.78rem;color:var(--accent);font-weight:600;margin-top:.05rem}
 .acc-item .acc-actions{display:inline-flex;align-items:center;gap:.35rem;flex:none}
 .acc-item .acc-arrow{color:var(--txt-3);flex:none}
 .acc-del{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:.6rem;border:1px solid transparent;background:transparent;color:var(--txt-3);cursor:pointer;opacity:.55;transition:opacity .25s var(--ease),color .25s var(--ease),background .25s var(--ease),border-color .25s var(--ease)}
@@ -401,7 +403,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1424</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1434</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -673,7 +675,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260828.1424";
+const APP_VERSION = "v.260828.1434";
 
 const state = {
   objetivo: 100000,
@@ -1259,11 +1261,12 @@ function bootLocal(){
   function accItem(a){
     const obj = fmtUsd(a.objetivo) + ' · ' + a.num_dep + ' dep.';
     const ars = Math.round((a.ahorradoUsd||0) * Number(a.dolar||0)).toLocaleString("es-AR");
-    const prog = fmtUsd(a.ahorradoUsd||0) + ' · $ ' + ars + ' · ' + (a.pagadas||0) + '/' + (a.total||0) + ' cuotas';
+    const cuotas = (a.pagadas||0) + '/' + (a.total||0) + ' cuotas';
+    const prog = fmtUsd(a.ahorradoUsd||0) + ' · $ ' + ars;
     return '<div class="acc-item" data-id="'+a.id+'" role="button" tabindex="0">'
       + '<span class="acc-main">'
       + '<span class="acc-head"><span class="acc-name">'+escapeHtml(a.nombre)+'</span><span class="acc-obj">'+obj+'</span></span>'
-      + '<span class="acc-prog-label">Ahorro:</span>'
+      + '<span class="acc-prog-row"><span class="acc-prog-label">Ahorro:</span><span class="acc-cuotas">'+cuotas+'</span></span>'
       + '<span class="acc-meta acc-meta--prog">'+prog+'</span>'
       + '</span>'
       + '<span class="acc-actions">'
