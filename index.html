@@ -404,7 +404,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1453</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1629</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -676,7 +676,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260828.1453";
+const APP_VERSION = "v.260828.1629";
 
 const state = {
   objetivo: 100000,
@@ -1063,13 +1063,17 @@ function nivelLabel(n,total){const r=n/Math.max(1,total); if(r<=.25)return"Inici
 
 function renderHistorial(){
   const rows = state.historial;
-  histCount.textContent = rows.length;
+  histCount.textContent = rows.filter(r=>r.tipo==="pago").length; // solo pagos (los marcadores no cuentan)
   const totalPagado = rows.filter(r=>r.tipo==="pago").reduce((s,r)=>s+r.montoUsd,0);
   histTotal.textContent = fmtUsd(totalPagado);
   ledgerEmpty.style.display = rows.length? "none":"block";
   // ordenar según state.sort; los separadores "plan" siempre al fondo del orden
   const sortCol = state.sort.col, sortDir = state.sort.dir;
   const sorted = [...rows].sort((a,b)=>{
+    // marcador de inicio de cuenta (--- CUENTA:) siempre arriba
+    const aAcc = a.tipo==="plan" && String(a.texto||"").indexOf("--- CUENTA:")===0;
+    const bAcc = b.tipo==="plan" && String(b.texto||"").indexOf("--- CUENTA:")===0;
+    if (aAcc !== bAcc) return aAcc ? -1 : 1;
     if (a.tipo!=="pago" && b.tipo==="pago") return 1;
     if (b.tipo!=="pago" && a.tipo==="pago") return -1;
     if (a.tipo!=="pago" && b.tipo!=="pago") return 0;
@@ -1308,6 +1312,13 @@ function bootLocal(){
     state.cuotas=snap.cuotas||[]; state.historial=snap.historial||[];
   }
 
+  // marcador de inicio de cada cuenta en el historial ("--- CUENTA: nombre ---")
+  function ensureAccMarker(){
+    const isAcc = h => h.tipo==="plan" && String(h.texto||"").indexOf("--- CUENTA:")===0;
+    if (state.historial.some(isAcc)) return; // ya está
+    state.historial.unshift({ tipo:"plan", fecha: nowIso(), texto: "--- CUENTA: "+(state.nombre||"—")+" ---" });
+  }
+
   function openAccountDone(){
     hacerBackup(); syncInputs(); render(); hideGates(); revealApp();
     navUser.style.display='inline-flex';
@@ -1320,17 +1331,19 @@ function bootLocal(){
     const snap = await window.SupaSync.downloadState(planId);
     if (!snap){ toast('No se pudo cargar esa cuenta'); return; }
     loadCloud(snap); state.planId=planId; state.nombre=snap.nombre;
+    ensureAccMarker();
     openAccountDone();
   }
 
   async function doCreateAccount(nombre){
     const acc = await window.SupaSync.createAccount(nombre);
     if (!acc){ toast('No se pudo crear la cuenta'); return; }
-    // arrancar en cero: sin objetivo ni depósitos, sin plan generado ni historial
+    // arrancar en cero: sin objetivo ni depósitos, sin plan generado,
+    // solo con el marcador de inicio de la cuenta en el historial
     state.objetivo=0; state.numDep=0; state.dolar=1;
     state.fechaInicio=todayISO(); state.fechaFin=null;
     state.cuotas = [];              // todavía no hay plan configurado
-    state.historial = [];           // sin registros
+    state.historial = [{ tipo:"plan", fecha: nowIso(), texto: "--- CUENTA: "+nombre+" ---" }];
     state.planId=acc.id; state.nombre=acc.nombre;
     openAccountDone();
     syncToCloud(); // persistir el plan recién creado
