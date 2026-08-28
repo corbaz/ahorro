@@ -44,7 +44,14 @@
   /* ---- Login con Gmail ---- */
   async function loginGoogle(){
     if (!ready) return;
-    const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + window.location.pathname } });
+    const { error } = await sb.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin + window.location.pathname,
+        // forzar el selector de cuentas de Google (entre varios mails del mismo usuario)
+        queryParams: { prompt: 'select_account' }
+      }
+    });
     if (error) console.error('loginGoogle:', error.message);
   }
 
