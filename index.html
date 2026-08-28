@@ -160,6 +160,7 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 .input__wrap .pre{position:absolute;left:1rem;font-family:var(--f-mono);color:var(--txt-3);font-size:1.05rem;font-weight:500;pointer-events:none}
 .input__wrap .input{padding-left:2.9rem}
 .cfg__row{display:grid;grid-template-columns:1fr 1fr;gap:1.15rem 1.1rem}
+.cfg__row + .cfg__row{margin-top:1.15rem}
 .cfg__row--full{grid-template-columns:1fr}
 .cfg__actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem}
 .cfg__actions .btn{flex:1;justify-content:center}
@@ -410,7 +411,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1923</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.1928</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -673,7 +674,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260828.1923";
+const APP_VERSION = "v.260828.1928";
 
 const state = {
   objetivo: 100000,
