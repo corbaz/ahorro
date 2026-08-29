@@ -225,6 +225,12 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 .cadencia__kpi .ritmo__val{font-size:1.4rem;line-height:1;font-weight:600;letter-spacing:-.01em}
 .cadencia__chart{background:var(--inset-bg);border:1px solid var(--hairline);border-radius:1.1rem;padding:1.1rem .6rem}
 .cadencia__chart svg{width:100%;height:auto;display:block;overflow:visible}
+.chart-flex{display:flex;align-items:center;gap:1.1rem}
+.chart-ring{flex:0 0 auto;width:132px}
+.chart-ring .donut{width:100%;height:auto}
+.chart-line{flex:1;min-width:0}
+.chart-line svg{width:100%;height:auto;display:block;overflow:visible}
+@media(max-width:520px){.chart-flex{flex-direction:column;gap:.9rem}.chart-ring{width:112px}}
 .cadencia__rows{margin:0;padding:0}
 .cadencia__row{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;padding:.6rem .7rem;font-size:.84rem;border-bottom:1px dashed var(--hairline)}
 .cadencia__row:last-child{border-bottom:none}
@@ -421,7 +427,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.2122</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.2132</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -682,7 +688,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260828.2122";
+const APP_VERSION = "v.260828.2132";
 
 const state = {
   objetivo: 100000,
@@ -997,7 +1003,16 @@ function chartRitmo(r){
   const yN = yCua(num), yPag = yCua(r.pagadas), yEsp = yCua(r.esperadas);
   const color = r.balance >= 0 ? 'var(--accent)' : 'var(--warn)';
   const area = `${pad},${H-pad} ${xFin},${H-pad} ${xFin},${yN}`;
-  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Progreso del plan de ahorro">
+  const pct = Math.round(r.progresoCuotas);
+  const circ = 2*Math.PI*50;
+  const donut = `<svg viewBox="0 0 120 120" class="donut" role="img" aria-label="Progreso del plan">
+    <circle cx="60" cy="60" r="50" fill="none" stroke="var(--hairline)" stroke-width="13"/>
+    <circle cx="60" cy="60" r="50" fill="none" stroke="var(--accent)" stroke-width="13" stroke-linecap="round"
+      stroke-dasharray="${circ}" stroke-dashoffset="${(circ*(1-pct/100)).toFixed(1)}" transform="rotate(-90 60 60)"/>
+    <text x="60" y="60" text-anchor="middle" font-family="var(--f-display)" font-weight="700" font-size="24" fill="var(--txt-1)">${pct}%</text>
+    <text x="60" y="79" text-anchor="middle" font-family="var(--f-mono)" font-size="9" fill="var(--txt-3)">de ${state.numDep} cuotas</text>
+  </svg>`;
+  const line = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Progresión ideal vs actual">
     <defs><linearGradient id="gArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity=".10"/><stop offset="1" stop-color="var(--accent-2)" stop-opacity=".01"/></linearGradient></defs>
     <g font-family="var(--f-mono)" font-size="11">
       <line x1="${pad}" y1="15" x2="${pad+26}" y2="15" stroke="var(--txt-3)" stroke-width="3" stroke-dasharray="6 4"/>
@@ -1017,6 +1032,7 @@ function chartRitmo(r){
     <text x="${xHoy-6}" y="${H-6}" fill="var(--gold)" font-family="var(--f-mono)" font-size="9" text-anchor="end">Hoy</text>
     <text x="${W-pad-26}" y="${H-6}" fill="var(--txt-3)" font-family="var(--f-mono)" font-size="9">Fin</text>
   </svg>`;
+  return `<div class="chart-flex"><div class="chart-ring">${donut}</div><div class="chart-line">${line}</div></div>`;
 }
 function barraRitmo(x, y, label, val, color){
   color = color || 'var(--accent)';
