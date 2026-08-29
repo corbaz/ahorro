@@ -214,20 +214,27 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 @media(max-width:440px){.ritmo__kpis{grid-template-columns:1fr}}
 
 /* modal cadencia */
-.cadencia{display:flex;flex-direction:column;gap:1.3rem}
-.cadencia__kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:.7rem}
-.cadencia__kpi{border-radius:1rem;padding:.85rem 1rem;background:var(--inset-bg);border:1px solid var(--hairline);display:flex;flex-direction:column;gap:.25rem}
-.cadencia__kpi .ritmo__label{font-size:.58rem}
-.cadencia__kpi .ritmo__val{font-size:1.15rem}
-.cadencia__chart{background:var(--inset-bg);border:1px solid var(--hairline);border-radius:1rem;padding:1rem}
+.cadencia{display:flex;flex-direction:column;gap:1.1rem}
+.cadencia__kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem}
+.cadencia__kpi{border-radius:1.1rem;padding:.9rem 1rem .95rem 1.15rem;background:var(--inset-bg);border:1px solid var(--hairline);display:flex;flex-direction:column;gap:.35rem;position:relative;overflow:hidden}
+.cadencia__kpi::after{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);opacity:.55;border-radius:0 3px 3px 0}
+.cadencia__kpi:nth-child(2)::after{background:var(--accent-2)}
+.cadencia__kpi:nth-child(3)::after{background:var(--gold)}
+.cadencia__kpi:nth-child(4)::after{background:var(--txt-3)}
+.cadencia__kpi .ritmo__label{font-size:.58rem;letter-spacing:.04em;color:var(--txt-3);text-transform:uppercase}
+.cadencia__kpi .ritmo__val{font-size:1.25rem;line-height:1.05}
+.cadencia__chart{background:var(--inset-bg);border:1px solid var(--hairline);border-radius:1.1rem;padding:1.1rem .6rem}
 .cadencia__chart svg{width:100%;height:auto;display:block;overflow:visible}
-.cadencia__alert{border-radius:1rem;padding:.9rem 1.1rem;border:1px solid var(--hairline);font-size:.84rem;font-weight:500;display:flex;align-items:center;gap:.6rem}
-.cadencia__alert.ok{background:rgba(52,211,153,.08);border-color:rgba(52,211,153,.3);color:var(--accent)}
-.cadencia__alert.bad{background:rgba(251,113,133,.08);border-color:rgba(251,113,133,.3);color:var(--warn)}
+.cadencia__rows{margin:0;padding:0}
+.cadencia__row{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;padding:.6rem .7rem;font-size:.84rem;border-bottom:1px dashed var(--hairline)}
+.cadencia__row:last-child{border-bottom:none}
+.cadencia__row span{color:var(--txt-3)}
+.cadencia__row b{font-family:var(--f-mono);font-weight:600;color:var(--txt-1)}
+.cadencia__alert{border-radius:1.1rem;padding:.95rem 1.1rem;border:1px solid var(--hairline);font-size:.84rem;font-weight:500;display:flex;align-items:center;gap:.6rem}
+.cadencia__alert.ok{background:rgba(52,211,153,.09);border-color:rgba(52,211,153,.3);color:var(--accent)}
+.cadencia__alert.bad{background:rgba(251,113,133,.09);border-color:rgba(251,113,133,.3);color:var(--warn)}
 .cadencia__alert svg{width:18px;height:18px;stroke:currentColor;stroke-width:1.8;fill:none;flex:none}
-.cadencia__row{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;font-size:.82rem}
-.cadencia__row b{font-family:var(--f-mono);font-weight:600}
-@media(max-width:680px){.cadencia__kpis{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:680px){.cadencia__kpis{grid-template-columns:repeat(2,1fr);gap:.6rem}}
 
 /* cuota grid (view-only) */
 .cuotas__bar{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1.2rem}
@@ -414,7 +421,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.2102</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260828.2106</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -675,7 +682,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260828.2102";
+const APP_VERSION = "v.260828.2106";
 
 const state = {
   objetivo: 100000,
@@ -988,20 +995,23 @@ function chartRitmo(r){
   const yCua = (c) => H - pad - (c/num)*(H-pad*2);
   const xFin = xDay(dias), xHoy = xDay(r.diasTranscurridos);
   const yN = yCua(num), yPag = yCua(r.pagadas), yEsp = yCua(r.esperadas);
+  const color = r.balance >= 0 ? 'var(--accent)' : 'var(--warn)';
   const area = `${pad},${H-pad} ${xFin},${H-pad} ${xFin},${yN}`;
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Progreso del plan de ahorro">
-    <defs><linearGradient id="gArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity=".22"/><stop offset="1" stop-color="var(--accent-2)" stop-opacity=".02"/></linearGradient></defs>
+    <defs><linearGradient id="gArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity=".10"/><stop offset="1" stop-color="var(--accent-2)" stop-opacity=".01"/></linearGradient></defs>
     <polygon points="${area}" fill="url(#gArea)"/>
-    <line x1="${pad}" y1="${H-pad}" x2="${xFin}" y2="${yN}" stroke="var(--accent)" stroke-width="2" stroke-dasharray="5 4" opacity=".75"/>
-    <line x1="${xHoy}" y1="${pad}" x2="${xHoy}" y2="${H-pad}" stroke="var(--gold)" stroke-width="1.5" opacity=".65"/>
-    <circle cx="${xHoy}" cy="${yEsp}" r="5.5" fill="var(--gold)" stroke="var(--surface)" stroke-width="2"/>
-    <text x="${xHoy-10}" y="${yEsp+3}" fill="var(--gold)" font-family="var(--f-mono)" font-size="11" text-anchor="end">Esperado ${r.esperadas}</text>
-    <circle cx="${xHoy}" cy="${yPag}" r="5.5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>
-    <text x="${xHoy+10}" y="${yPag+3}" fill="var(--accent)" font-family="var(--f-mono)" font-size="11" text-anchor="start">Pagadas ${r.pagadas}</text>
+    <line x1="${pad}" y1="${H-pad}" x2="${xFin}" y2="${yN}" stroke="var(--txt-3)" stroke-width="2" stroke-dasharray="6 5" opacity=".8"/>
+    <text x="${xFin-6}" y="${yN-8}" fill="var(--txt-3)" font-family="var(--f-mono)" font-size="11" text-anchor="end">Ideal</text>
+    <line x1="${pad}" y1="${H-pad}" x2="${xHoy}" y2="${yPag}" stroke="${color}" stroke-width="2.5"/>
+    <circle cx="${xHoy}" cy="${yPag}" r="5.5" fill="${color}" stroke="var(--surface)" stroke-width="2"/>
+    <text x="${xHoy+9}" y="${yPag+3}" fill="${color}" font-family="var(--f-mono)" font-size="11" text-anchor="start">Actual ${r.pagadas}</text>
+    <circle cx="${xHoy}" cy="${yEsp}" r="4.5" fill="var(--gold)" stroke="var(--surface)" stroke-width="1.5"/>
+    <text x="${xHoy-8}" y="${yEsp-6}" fill="var(--gold)" font-family="var(--f-mono)" font-size="10" text-anchor="end">Esperado ${r.esperadas}</text>
+    <line x1="${xHoy}" y1="${pad}" x2="${xHoy}" y2="${H-pad}" stroke="var(--gold)" stroke-width="1.2" opacity=".5"/>
+    <text x="${xHoy-6}" y="${pad+11}" fill="var(--gold)" font-family="var(--f-mono)" font-size="9" text-anchor="end">Hoy</text>
     <line x1="${pad}" y1="${H-pad}" x2="${W-pad}" y2="${H-pad}" stroke="var(--hairline)" stroke-width="1"/>
     <text x="${pad}" y="${H-8}" fill="var(--txt-3)" font-family="var(--f-mono)" font-size="9">Inicio</text>
     <text x="${W-pad-26}" y="${H-8}" fill="var(--txt-3)" font-family="var(--f-mono)" font-size="9">Fin</text>
-    <text x="${xHoy-16}" y="${H-8}" fill="var(--gold)" font-family="var(--f-mono)" font-size="9">Hoy</text>
   </svg>`;
 }
 function barraRitmo(x, y, label, val, color){
@@ -1034,11 +1044,13 @@ function abrirCadencia(){
           <div class="cadencia__kpi"><span class="ritmo__label">Próximo pago</span><span class="ritmo__val" style="font-size:.95rem">${proxVence}</span></div>
         </div>
         <div class="cadencia__chart">${chartCadencia(r)}</div>
-        <div class="cadencia__row"><span>Inicio del reto</span><b>${fmtDay(state.fechaInicio)}</b></div>
-        <div class="cadencia__row"><span>Fecha objetivo</span><b>${fmtDay(state.fechaFin)}</b></div>
-        <div class="cadencia__row"><span>Días transcurridos / totales</span><b>${r.diasTranscurridos} / ${r.diasTotales} días</b></div>
-        <div class="cadencia__row"><span>Días restantes</span><b>${r.diasRestantes} días</b></div>
-        <div class="cadencia__row"><span>Cuotas pendientes</span><b>${r.pend}</b></div>
+        <div class="cadencia__rows">
+          <div class="cadencia__row"><span>Inicio del reto</span><b>${fmtDay(state.fechaInicio)}</b></div>
+          <div class="cadencia__row"><span>Fecha objetivo</span><b>${fmtDay(state.fechaFin)}</b></div>
+          <div class="cadencia__row"><span>Días transcurridos / totales</span><b>${r.diasTranscurridos} / ${r.diasTotales} día(s)</b></div>
+          <div class="cadencia__row"><span>Días restantes</span><b>${r.diasRestantes} día(s)</b></div>
+          <div class="cadencia__row"><span>Cuotas pendientes</span><b>${r.pend}</b></div>
+        </div>
         ${alerta}
       </div>`;
   }
