@@ -1029,7 +1029,7 @@ function abrirCadencia(){
       <div class="cadencia">
         <div class="cadencia__kpis">
           <div class="cadencia__kpi"><span class="ritmo__label">Cuotas pagadas</span><span class="ritmo__val ok">${r.pagadas} / ${state.numDep}</span></div>
-          <div class="cadencia__kpi"><span class="ritmo__label">Cuotas esperadas a hoy</span><span class="ritmo__val">${r.esperadas}</span></div>
+          <div class="cadencia__kpi"><span class="ritmo__label">Ritmo ideal</span><span class="ritmo__val">${Math.round(r.ritmoIdeal)} días</span></div>
           <div class="cadencia__kpi"><span class="ritmo__label">Avance</span><span class="ritmo__val">${ritmoRealTxt}</span></div>
           <div class="cadencia__kpi"><span class="ritmo__label">Próximo pago</span><span class="ritmo__val" style="font-size:.95rem">${proxVence}</span></div>
         </div>
