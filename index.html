@@ -425,7 +425,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260829.1011</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260829.1019</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -693,7 +693,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260829.1011";
+const APP_VERSION = "v.260829.1019";
 
 const state = {
   objetivo: 100000,
@@ -773,6 +773,13 @@ const nowIso = () => new Date().toISOString();
 const fmtDay = (iso) => { const d=new Date(iso); if(isNaN(d)) return "—";
   return d.toLocaleDateString("es-AR",{day:"2-digit",month:"2-digit",year:"numeric"}); }
 const todayISO = () => { const d=new Date(); d.setHours(0,0,0,0); return d.toISOString(); }
+// días hasta una fecha por día calendario (no por horas): 0 = hoy, +N = futuro, −N = pasado
+const diasHasta = (iso) => {
+  const d = new Date(iso); if (isNaN(d)) return null;
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  d.setHours(0,0,0,0);
+  return Math.round((d - hoy) / 86400000);
+};
 
 /* ---- Cálculos de ritmo / dimensión temporal ---- */
 function ritmo(){
@@ -975,7 +982,13 @@ function renderRitmo(){
   // próximo pago = vence de la primera cuota impaga (roja)
   const primeraPend = pendientes().sort((a,b)=>a.n-b.n)[0];
   const proxPago = (primeraPend && primeraPend.fecha) ? primeraPend.fecha : null;
-  document.getElementById('rRitmoIdealSub').textContent = proxPago ? ('próximo pago ' + fmtDay(proxPago)) : '—';
+  if (proxPago){
+    const d = diasHasta(proxPago);
+    const faltaTxt = d === null ? '' : (d === 0 ? ' · vence hoy' : (d > 0 ? ` · faltan ${d} ${d===1?'día':'días'}` : ` · venció hace ${Math.abs(d)} ${Math.abs(d)===1?'día':'días'}`));
+    document.getElementById('rRitmoIdealSub').textContent = 'próximo pago ' + fmtDay(proxPago) + faltaTxt;
+  } else {
+    document.getElementById('rRitmoIdealSub').textContent = '—';
+  }
   // balance con color
   const elBal = document.getElementById('rBalance'), elBalSub = document.getElementById('rBalanceSub');
   if (r.balance > 0){
@@ -1143,9 +1156,8 @@ function renderCuotas(){
         const pago = state.historial.find(h => h.tipo==="pago" && h.n === c.n);
         fechaLine = `<div class="cuota__fecha">Pagada · ${fmtDay(pago ? pago.fecha : c.fecha)}</div>`;
       } else {
-        const hoy = new Date(); hoy.setHours(0,0,0,0);
-        const dias = Math.round((new Date(c.fecha) - hoy) / 86400000);
-        const txt = dias > 0 ? `faltan ${dias} ${dias===1?'día':'días'}` : (dias === 0 ? 'vence hoy' : `venció hace ${Math.abs(dias)} ${Math.abs(dias)===1?'día':'días'}`);
+        const dias = diasHasta(c.fecha);
+        const txt = dias === null ? '' : (dias > 0 ? `faltan ${dias} ${dias===1?'día':'días'}` : (dias === 0 ? 'vence hoy' : `venció hace ${Math.abs(dias)} ${Math.abs(dias)===1?'día':'días'}`));
         fechaLine = `<div class="cuota__fecha">vence ${fmtDay(c.fecha)} · ${txt}</div>`;
       }
     }
