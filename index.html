@@ -425,7 +425,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260829.1000</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260829.1011</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -693,7 +693,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260829.1000";
+const APP_VERSION = "v.260829.1011";
 
 const state = {
   objetivo: 100000,
@@ -887,7 +887,22 @@ function registrarPagos(selectedNs){
   return any;
 }
 
-/* ---- Recalcular el plan + dejar separador en el historial ---- */
+/* ---- Arrancar de cero: regenerar cuotas, vaciar historial y dejar UN solo
+   separador "NUEVO PLAN" (objetivo en u$s y en $). Lo usan "Recalcular" y
+   "Limpiar historial" (mismas acciones). ---- */
+function armarPlanCero(obj, num, dolar){
+  state.cuotas = resetear(obj, num);   // regenera TODAS las cuotas (pendientes)
+  asignarFechasPlan();                 // fecha de vencimiento de cada cuota
+  // conservar el marcador de cuenta (si existe) y dejar UN separador NUEVO PLAN
+  const accMarker = state.historial.filter(h => h.tipo==="plan" && String(h.texto||"").indexOf("--- CUENTA:")===0);
+  state.historial = [
+    ...accMarker,
+    { tipo:"plan", fecha: nowIso(), objetivo: obj, numDep: num,
+      texto: `--- NUEVO PLAN: objetivo u$s ${fmtNum(obj)} ($ ${fmtNum(obj * dolar)})  |  ${num} cuotas  |  ${fmtDate(nowIso())} ---` }
+  ];
+}
+
+/* ---- Recalcular el plan (lee los campos de configuración) ---- */
 function recalcular(){
   const objRaw = Number(inObj.value);
   const numRaw = Number(inNum.value);
@@ -907,13 +922,7 @@ function recalcular(){
   // fecha de inicio: editable por el usuario; si no se puso, arranca hoy
   state.fechaInicio = (ini && ini.value) ? new Date(ini.value + 'T12:00:00').toISOString() : todayISO();
   state.fechaFin = new Date(fin.value + 'T12:00:00').toISOString();
-  // separador en el historial que marca el cambio de plan (objetivo en u$s y en $)
-  state.historial.push({
-    tipo:"plan", fecha: nowIso(), objetivo: obj, numDep: num,
-    texto: `--- NUEVO PLAN: objetivo u$s ${fmtNum(obj)} ($ ${fmtNum(obj * dolar)})  |  ${num} cuotas  |  ${fmtDate(nowIso())} ---`
-  });
-  state.cuotas = resetear(obj, num);   // regenera TODAS las cuotas (pendientes)
-  asignarFechasPlan();                 // fecha de vencimiento de cada cuota
+  armarPlanCero(obj, num, dolar);
   hacerBackup(); syncToCloud();
   render();
   toast("Plan recalculado y registrado en el historial");
@@ -1540,7 +1549,7 @@ $("fileImport").addEventListener("change", e=>{ if(e.target.files[0]) importar(e
 $("btnCloseCelebrate").addEventListener("click", ()=> celebrate.classList.remove("show"));
 $("btnBackup").addEventListener("click", ()=> hacerBackup(false));
 $("btnTheme").addEventListener("click", toggleTheme);
-$("btnClearHist").addEventListener("click", ()=>{ state.cuotas = resetear(state.objetivo, state.numDep); asignarFechasPlan(); state.historial=[]; hacerBackup(); syncToCloud(); render(); toast("Plan reiniciado (igual que Recalcular) · historial limpio"); });
+$("btnClearHist").addEventListener("click", ()=>{ armarPlanCero(state.objetivo, state.numDep, state.dolar); hacerBackup(); syncToCloud(); render(); toast("Historial limpio · plan regenerado"); });
 filters.addEventListener("click", e=>{ const b=e.target.closest(".chip"); if(b) setFilter(b.dataset.f); });
 // ordenar historial al clickear los headers Fecha / N.º cuota
 document.querySelectorAll('#ledgerT th.th-sort').forEach(th=>{

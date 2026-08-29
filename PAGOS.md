@@ -63,16 +63,16 @@ Al **pagar**, se recalcula cuántos días quedan hasta la fecha de finalización
 
 | Acción (botón) | Cuotas | Fechas | Cotización | Historial | Guardado |
 |---|---|---|---|---|---|
-| **Inicializar / Recalcular** | Regenera las 100 cuotas (todas **pendientes**), montos `k·i` progresivos truncados, última absorbe el resto | Cuota 1 = fecha de inicialización · cuota 100 = fin · resto a cadencia ~2 días | Guarda la cotización del día (creación) | Añade separador `--- NUEVO PLAN ---` | backup + nube |
+| **Inicializar / Recalcular** | Regenera las 100 cuotas (todas **pendientes**), montos `k·i` progresivos truncados, última absorbe el resto | Cuota 1 = fecha de inicialización · cuota 100 = fin · resto a cadencia ~2 días | Guarda la cotización del día (creación) | **Vacía el historial** y añade separador `--- NUEVO PLAN ---` (objetivo u$s y $) | backup + nube |
 | **Entrar / abrir cuenta** | Carga las cuotas y su estado (pagada/pendiente) | Si no tienen fecha, asigna cuota 1 = inicio → fin | Carga la cotización guardada | Carga el historial | — |
 | **Pagar 2 cuotas (mismo día)** | Marca esas 2 como **pagadas**; las otras 98 quedan pendientes | Las 98 **impagas se re-esparcen**: la próxima vence `pago + 1·cadencia`, con `cadencia = díasFaltantes/98`; la última queda en fin. Las pagadas **conservan** su fecha | Se actualiza a la cotización del momento de pagar | Añade 2 filas `pago` (fecha, cotización, montos u$s/ARS, restante, acumulado) | backup + nube |
 | **Comprar (modal "Pagar cuotas")** | Igual que Pagar, pero en 3 pasos: 1) pide **cotización del dólar** → 2) **elegís cuotas** → 3) **Comprar** | Idem | Si el dólar cambió, se actualiza antes de pagar | Idem | backup + nube |
 | **Refrescar (render)** | Recalcula totales: pendientes, ahorrado, %, barra de progreso | Recalcula `faltan X días` y balance con el **día actual** | No toca | No toca | — |
-| **Limpiar historial** | Regenera las 100 pendientes (igual que **Recalcular**) | Reasigna cuota 1 = inicio → fin | No toca | Vacía el historial | backup + nube |
+| **Limpiar historial** | Regenera las 100 pendientes (igual que **Recalcular**) | Reasigna cuota 1 = inicio → fin | No toca | **Vacía el historial** y añade separador `--- NUEVO PLAN ---` (igual que Recalcular) | backup + nube |
 
 ## Resumen de una línea
 
 - **Configurar cuenta** = fijar los 5 obligatorios: objetivo, depósitos, fecha de inicio (editable), fecha de fin (editable) y cotización del día.
 - **Montos** = fórmula progresiva `k·i`, **sin decimales**: cuotas 1..N−1 truncadas (mínimo $1), la **última absorbe el resto** (suma exacta).
-- **Recalcular / Limpiar historial** = arrancar de cero (regenera montos y fechas, vacía el historial).
+- **Recalcular / Limpiar historial** = arrancar de cero (regenera montos y fechas, vacía el historial y deja un separador `NUEVO PLAN`).
 - **Pagar / Comprar** = tilda pagadas + re-esparce las impagas desde el día del pago (nueva cadencia) + suma al historial con la cotización del momento.
