@@ -427,7 +427,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260829.0725</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260829.0732</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -688,7 +688,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260829.0725";
+const APP_VERSION = "v.260829.0732";
 
 const state = {
   objetivo: 100000,
@@ -712,15 +712,14 @@ function resetear(objetivo, numDep){
   objetivo = Math.max(1, Number(objetivo) || 0);
   numDep = Math.max(1, Math.min(100, Math.round(Number(numDep) || 1)));
   const tri = numDep * (numDep + 1) / 2;
-  let k = Math.round(objetivo / tri); if (k < 1) k = 1;
-  const totalBase = k * tri;
-  const diff = objetivo - totalBase;
-  const per = Math.trunc(diff / numDep);     // parte entera del reparto
-  const remainder = diff - per * numDep;
+  const k = objetivo / tri;                 // unidad base decimal (calendario triangular)
   const cuotas = [];
+  let acum = 0;
   for (let dep = 1; dep <= numDep; dep++){
-    let monto = k * dep + per;
-    if (dep === numDep) monto += remainder;
+    let monto = Math.round(k * dep * 100) / 100;
+    if (dep === numDep) monto = Math.round((objetivo - acum) * 100) / 100;  // la última absorbe el resto
+    monto = Math.max(0, monto);
+    acum += monto;
     cuotas.push({ n: dep, monto, paid:false });
   }
   return cuotas;
@@ -754,9 +753,9 @@ function rebalancearFechas(){
 /* ---- helpers ---- */
 const pendientes = () => state.cuotas.filter(c => !c.paid);
 const sumUsd = (arr) => arr.reduce((s,c)=>s + c.monto, 0);
-const fmtUsd = (n) => "u$s " + Math.round(Number(n||0)).toLocaleString("es-AR");
-const fmtArs = (n) => "$ " + Math.round(Number(n||0)).toLocaleString("es-AR") + " · ARS";
-const fmtNum = (n) => Math.round(Number(n||0)).toLocaleString("es-AR");
+const fmtUsd = (n) => "u$s " + Number(n||0).toLocaleString("es-AR", {minimumFractionDigits:2, maximumFractionDigits:2});
+const fmtArs = (n) => "$ " + Number(n||0).toLocaleString("es-AR", {minimumFractionDigits:2, maximumFractionDigits:2}) + " · ARS";
+const fmtNum = (n) => Number(n||0).toLocaleString("es-AR", {minimumFractionDigits:2, maximumFractionDigits:2});
 const fmtDate = (iso) => { const d=new Date(iso); if(isNaN(d)) return "—";
   return d.toLocaleString("es-AR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit",hour12:false}); }
 const nowIso = () => new Date().toISOString();
@@ -1146,7 +1145,7 @@ function renderCuotas(){
     }
     return `<div class="cuota${c.paid?" is-paid":""}" data-n="${c.n}">
       <div class="cuota__top"><span class="cuota__n">N.º ${c.n}</span><span class="cuota__lvl">${nivelLabel(c.n,state.numDep)}</span></div>
-      <div class="cuota__amt"><small>u$s</small><span>${c.monto.toLocaleString("es-AR")}</span></div>
+      <div class="cuota__amt"><small>u$s</small><span>${c.monto.toLocaleString("es-AR", {minimumFractionDigits:2, maximumFractionDigits:2})}</span></div>
       ${fechaLine}
       <div class="cuota__share"><i style="width:${(c.monto/maxMonto*100).toFixed(1)}%"></i></div>
       <div class="cuota__foot"><span class="cuota__status">${c.paid?"Pagada":"Pendiente"}</span><span class="cuota__check" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-10"/></svg></span></div>
@@ -1260,7 +1259,7 @@ function renderChecklist(){
       <span class="box"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-10"/></svg></span>
       <span class="label">Cuota ${c.n}</span>
       <span class="amt">
-        <span class="amt__usd">u$s ${c.monto.toLocaleString("es-AR")}</span>
+        <span class="amt__usd">u$s ${c.monto.toLocaleString("es-AR", {minimumFractionDigits:2, maximumFractionDigits:2})}</span>
         <span class="amt__sep">/</span>
         <span class="amt__ars">$ ${ars.toLocaleString("es-AR")}</span>
       </span>
