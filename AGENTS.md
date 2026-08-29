@@ -18,7 +18,7 @@ El archivo origen vive en `/Users/jucorbaz/www/dsh/ahorro.xlsm` y NO se versiona
 | Hoja **Ahorro** (objetivo, Nº depósitos, cuotas) | Estado `state.objetivo`, `state.numDep`, `state.cuotas[]` | ✅ |
 | Hoja **backup** (copia de seguridad) | `hacerBackup()` → `localStorage` + Export/Import JSON | ✅ |
 | Hoja **historial** (9 columnas, acumula pagos) | `state.historial[]` + tabla "Historial de pagos" | ✅ |
-| `Módulo1.Resetear()` (calendario triangular + separador en historial) | `resetear()` + `recalcular()` con modal de confirmación | ✅ |
+| `Módulo1.Resetear()` (fórmula progresiva + separador en historial) | `resetear()` + `recalcular()` con modal de confirmación | ✅ |
 | `UserForm1` (modal "tildá las que pagaste") | Modal "Pagar cuotas" (checkboxes + cotización + Comprar) | ✅ |
 | `UserForm1.CommandButton1_Click` (registra pagos, recalcula después) | `registrarPagos()` (9 columnas, restante/acumulado post-pago) | ✅ |
 | `Módulo1.ContarPendientes()` | KPI en vivo + badge en la navbar | ✅ |
@@ -26,7 +26,7 @@ El archivo origen vive en `/Users/jucorbaz/www/dsh/ahorro.xlsm` y NO se versiona
 
 ## Reglas para modificar
 
-1. **Fidelidad al VBA primero.** Si una lógica parece rara, comparala con el VBA antes de "mejorarla". El calendario triangular (`k = objetivo / Σ(1..n)`, `per = Fix(diff/n)`, último absorbe el resto) es intencional y debe coincidir con el Excel.
+1. **Fidelidad al VBA primero.** Si una lógica parece rara, comparala con el VBA antes de "mejorarla". La fórmula de montos es **progresiva** (`cuota i = k·i` con `k = objetivo / Σ(1..n)`), **sin decimales**: las cuotas 1..N−1 se truncan (`Fix`, mínimo $1) y la última absorbe el resto. `PAGOS.md` es la fuente de verdad de las reglas de pago.
 2. **Sin build, sin dependencias.** Todo en `index.html`. No agregues npm, bundlers, ni frameworks. Fuentes e íconos van por CDN o inline.
 3. **Datos persistentes.** Cualquier cambio de estado que el VBA persistiría (pago, recálculo) debe llamar a `hacerBackup()`. El `state.historial` se persiste junto al resto.
 4. **Diseño.** Mantén el lenguaje visual: Ethereal Glass (OLED + esmeralda), Asymmetrical Bento, Double-Bezel, modales glass. Curvas `cubic-bezier(0.32,0.72,0,1)` y `cubic-bezier(0.16,1,0.3,1)`. Solo animar `transform`/`opacity`. `backdrop-filter` solo en nav/modales fijos. Fonts: Plus Jakarta Sans + Space Grotesk. Sin Inter/Roboto/Arial.
@@ -96,5 +96,4 @@ Al cambiar el schema del estado, subí la versión de la clave (`/v3`) para no m
 ## Próximos pasos sugeridos
 
 - Export del historial a CSV (para re-abrirlo en Excel).
-- Gráfico de progreso acumulado.
 - Importar estado directamente desde un `.xlsm` nuevo.
