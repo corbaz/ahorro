@@ -372,6 +372,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
 .nav__user{display:inline-flex;align-items:center;gap:.5rem;font-size:.78rem;font-weight:600;color:var(--txt-2);padding:.35rem .7rem;border-radius:999px;background:var(--surface-2);border:1px solid var(--hairline)}
 .nav__user .avatar{width:1.4rem;height:1.4rem;border-radius:50%;flex:none;object-fit:cover}
 .btn--google{display:inline-flex;align-items:center;gap:.6rem;background:#fff;color:#1f1f1f;border-color:#fff;font-weight:600}
+.btn--google:hover{background:#e8e8e8;border-color:#e8e8e8;color:#1f1f1f}
 .btn--google svg{width:18px;height:18px;fill:none}
 .auth-overlay{position:fixed;inset:0;z-index:60;display:none;place-items:center;padding:1rem;background:var(--modal-overlay);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .auth-overlay.show{display:grid;animation:fadein .4s var(--ease)}
@@ -430,7 +431,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260830.1021</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260830.1033</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -704,7 +705,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260830.1021";
+const APP_VERSION = "v.260830.1033";
 
 const state = {
   objetivo: 100000,
