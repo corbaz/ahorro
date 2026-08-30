@@ -431,7 +431,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260830.1217</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260830.1221</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -626,7 +626,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="modal__body">
       <div class="modal__rate field" style="flex-direction:row;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
-        <label style="margin:0;color:var(--txt-2);font-size:.8rem;text-transform:none;letter-spacing:0">Cotización dólar: <b class="ars" id="modalRateShow" style="font-family:var(--f-mono)">1</b></label>
+        <label style="margin:0;color:var(--txt-2);font-size:.8rem;text-transform:none;letter-spacing:0">u$s 1 = $ <b class="ars" id="modalRateShow" style="font-family:var(--f-mono)">1</b> ARS</label>
       </div>
       <div class="modal__totals">
         <div class="mtot pend"><h5><i></i> Pendientes</h5><div class="mtot__usd" id="mPendUsd">u$s 0</div><div class="mtot__ars" id="mPendArs">$ 0 · ARS</div></div>
@@ -704,7 +704,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260830.1217";
+const APP_VERSION = "v.260830.1221";
 
 const state = {
   objetivo: 100000,
