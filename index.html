@@ -425,7 +425,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260830.1234</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260830.1321</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -469,6 +469,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
         <div class="field"><label>Total Objetivo</label><div class="input__wrap"><span class="pre">u$s</span><input class="input" id="inObj" type="number" min="1" step="1000" value="100000" inputmode="numeric"/></div></div>
         <div class="field"><label>Frecuencia de pago</label>
           <select class="input" id="inFrecuencia">
+            <option value="diaria">Diaria</option>
             <option value="semanal">Semanal</option>
             <option value="quincenal">Quincenal</option>
             <option value="mensual">Mensual</option>
@@ -477,7 +478,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
         </div>
       </div>
       <div class="cfg__row">
-        <div class="field"><label>Nº de Cuotas</label><input class="input" id="inNum" type="number" min="1" max="1000" step="1" value="100" inputmode="numeric"/></div>
+        <div class="field"><label>Nº de Cuotas</label><input class="input" id="inNum" type="number" min="1" max="1830" step="1" value="100" inputmode="numeric"/></div>
         <div class="field"><label>Tipo de plan</label>
           <select class="input" id="inTipo">
             <option value="progresivo">Progresivo (cuotas crecientes)</option>
@@ -708,14 +709,14 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260830.1234";
+const APP_VERSION = "v.260830.1321";
 
 const state = {
   objetivo: 100000,
   numDep: 100,
   dolar: 1,
   tipo: "progresivo",  // sistema de cuotas: "progresivo" (creciente) | "iguales" (fijo)
-  frecuencia: "cantidad",  // "semanal" | "quincenal" | "mensual" | "cantidad" (define Nº de cuotas solo o manual)
+  frecuencia: "cantidad",  // "diaria" | "semanal" | "quincenal" | "mensual" | "cantidad" (define Nº de cuotas solo o manual)
   planId: null,      // id del reto (plan) en Supabase — se setea al abrir/crear reto
   nombre: null,      // nombre del reto (lo elige el usuario)
   fechaInicio: null,   // ISO date — se setea al crear/recalcular el plan
@@ -757,7 +758,7 @@ function generarMontos(amount, count, tipo){
 /* ---- Generar las cuotas del plan (objetos {n, monto, paid:false}) ---- */
 function resetear(objetivo, numDep, tipo){
   objetivo = Math.max(1, Math.round(Number(objetivo) || 0));
-  numDep = Math.max(1, Math.min(1000, Math.round(Number(numDep) || 1)));
+  numDep = Math.max(1, Math.min(1830, Math.round(Number(numDep) || 1)));
   tipo = tipo || state.tipo || "progresivo";
   return generarMontos(objetivo, numDep, tipo).map((monto, idx) => ({ n: idx+1, monto, paid:false }));
 }
@@ -952,7 +953,7 @@ function recalcular(){
   if (!fin || !fin.value){ toast('Poné la Fecha de finalización', true); fin && fin.focus(); return; }
   if (dolar <= 0){ toast('Poné la Cotización del dólar', true); inDolar.focus(); return; }
   const obj = Math.max(1, Math.round(objRaw));
-  const num = Math.max(1, Math.min(1000, Math.round(numRaw)));
+  const num = Math.max(1, Math.min(1830, Math.round(numRaw)));
   // validación: objetivo siempre mayor que el nº de cuotas
   if (obj <= num){ avisar('El Total Objetivo debe ser mayor que el Nº de cuotas (' + num + '). Ajustá los valores e intentá de nuevo.'); inObj.focus(); return; }
   state.objetivo = obj; state.numDep = num; state.dolar = dolar;
@@ -1386,12 +1387,13 @@ navVer.textContent = APP_VERSION;
 if (buildVer) buildVer.textContent = APP_VERSION;
 
 /* ---- helpers de arranque (puerta de login / modo local) ---- */
-/* ---- Calcular Nº de cuotas según frecuencia (semanal/quincenal/mensual) ---- */
+/* ---- Calcular Nº de cuotas según frecuencia (diaria/semanal/quincenal/mensual) ---- */
 function cuotasPorFrecuencia(frec, iniVal, finVal){
   const ini = new Date(iniVal + 'T12:00:00');
   const fin = new Date(finVal + 'T12:00:00');
   if (isNaN(ini) || isNaN(fin) || fin <= ini) return 0;
   const dias = Math.round((fin - ini) / 86400000);
+  if (frec === "diaria") return Math.max(1, dias);
   if (frec === "semanal") return Math.max(1, Math.round(dias / 7));
   if (frec === "quincenal") return Math.max(1, Math.round(dias / 15));
   if (frec === "mensual") return Math.max(1, Math.round(dias / 30));
@@ -1662,7 +1664,7 @@ if (inFechaInicio) inFechaInicio.addEventListener("change", ()=>{
   hacerBackup(); render();
   toast("Fecha de inicialización guardada");
 });
-// frecuencia de pago: define Nº de cuotas solo (semanal/quincenal/mensual) o manual (cantidad)
+// frecuencia de pago: define Nº de cuotas solo (diaria/semanal/quincenal/mensual) o manual (cantidad)
 const inFrecuencia = document.getElementById('inFrecuencia');
 if (inFrecuencia) inFrecuencia.addEventListener("change", ()=>{
   state.frecuencia = inFrecuencia.value;

@@ -22,3 +22,6 @@ Thumbs.db
 
 # Supabase — claves locales (no versionar)
 supabase/config.json
+
+# graphify-axet
+.graphify/
