@@ -6,16 +6,19 @@
 
 ## Configuración de reto (obligatoria)
 
-Cada reto, para poder operar, **debe** tener estos 6 datos configurados (sí o sí). Sin ellos no hay plan ni pagos:
+Cada reto, para poder operar, **debe** tener estos 7 datos configurados (sí o sí). Sin ellos no hay plan ni pagos:
 
 | Campo | Qué es | Regla |
 |---|---|---|
 | **Objetivo** | Total a ahorrar, en u$s | Entero > 0 y **mayor que el Nº de cuotas** |
-| **N.º de cuotas** | Cuántas cuotas tiene el plan | Entero > 0 |
+| **N.º de cuotas** | Cuántas cuotas tiene el plan | Entero > 0 · se calcula solo según la frecuencia, o se escribe a mano |
+| **Frecuencia de pago** | Ritmo de las cuotas | `Semanal` / `Quincenal` / `Mensual` (define las cuotas solo) o `Cantidad de cuotas` (manual) |
 | **Tipo de plan** | Sistema de cuotas | `Progresivo` (crecientes) o `Iguales` (fija) |
 | **Fecha de inicialización** | Día en que arranca el reto | Editable por el usuario · cuota 1 = este día |
 | **Fecha de finalización** | Día objetivo de cierre | Editable por el usuario · cuota N (última) = este día |
 | **Cotización del dólar (día de creación)** | Tipo de cambio u$s → ARS del día en que se crea el reto | Entero > 0 (sin decimales) · referencia inicial |
+
+**Frecuencia → Nº de cuotas:** con las fechas de inicio y fin, `Semanal` = días/7, `Quincenal` = días/15, `Mensual` = días/30 (redondeado, mínimo 1). Si elegís `Cantidad de cuotas`, el campo se habilita y lo escribís vos.
 
 La cotización **no queda congelada**: al pagar, si el dólar cambió, se usa la cotización **del momento de pagar** (ver [Cotización del dólar](#cotización-del-dólar)).
 

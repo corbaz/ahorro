@@ -189,6 +189,7 @@ select.input{font-family:var(--f-display);font-weight:600;cursor:pointer;color:v
 select.input option{color:var(--txt);background:var(--bg-2)}
 [data-theme="light"] select.input{color-scheme:light}
 [data-theme="light"] select.input option{color:#0e1116;background:#ffffff}
+.input:disabled{opacity:.65;cursor:not-allowed}
 
 /* ritmo de ahorro */
 .ritmo{display:flex;flex-direction:column;gap:1.4rem}
@@ -424,7 +425,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260830.1227</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260830.1234</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -459,22 +460,32 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
 
     <!-- config (Resetear) -->
     <article class="card b-config reveal"><div class="card__inner">
-      <div class="card__head"><div><div class="card__title">Configuración del reto</div><div class="card__hint">Definí tu objetivo y la cantidad de cuotas · el plan se regenera y queda registrado</div></div><span class="eyebrow">Ajustes</span></div>
-      <div class="cfg__row">
-        <div class="field"><label>Total Objetivo</label><div class="input__wrap"><span class="pre">u$s</span><input class="input" id="inObj" type="number" min="1" step="1000" value="100000" inputmode="numeric"/></div></div>
-        <div class="field"><label>Nº de Cuotas</label><input class="input" id="inNum" type="number" min="1" max="1000" step="1" value="100" inputmode="numeric"/></div>
-      </div>
+      <div class="card__head"><div><div class="card__title">Configuración del reto</div><div class="card__hint">Definí las fechas, el objetivo y la frecuencia · el plan se regenera y queda registrado</div></div><span class="eyebrow">Ajustes</span></div>
       <div class="cfg__row">
         <div class="field"><label>Fecha de inicialización</label><input class="input" id="inFechaInicio" type="date"/></div>
         <div class="field"><label>Fecha de finalización</label><input class="input" id="inFechaFin" type="date"/></div>
       </div>
       <div class="cfg__row">
+        <div class="field"><label>Total Objetivo</label><div class="input__wrap"><span class="pre">u$s</span><input class="input" id="inObj" type="number" min="1" step="1000" value="100000" inputmode="numeric"/></div></div>
+        <div class="field"><label>Frecuencia de pago</label>
+          <select class="input" id="inFrecuencia">
+            <option value="semanal">Semanal</option>
+            <option value="quincenal">Quincenal</option>
+            <option value="mensual">Mensual</option>
+            <option value="cantidad">Cantidad de cuotas</option>
+          </select>
+        </div>
+      </div>
+      <div class="cfg__row">
+        <div class="field"><label>Nº de Cuotas</label><input class="input" id="inNum" type="number" min="1" max="1000" step="1" value="100" inputmode="numeric"/></div>
         <div class="field"><label>Tipo de plan</label>
           <select class="input" id="inTipo">
             <option value="progresivo">Progresivo (cuotas crecientes)</option>
             <option value="iguales">Iguales (cuota fija)</option>
           </select>
         </div>
+      </div>
+      <div class="cfg__row cfg__row--full">
         <div class="field"><label>Cotización dólar (1 u$s = … $)</label><div class="input__wrap"><span class="pre">$</span><input class="input" id="inDolar" type="number" min="1" step="1" value="1" inputmode="numeric"/></div></div>
       </div>
       <p class="cfg__note"><b>Progresivo:</b> las cuotas crecen de a poco (<span class="code">k·n</span>, con <span class="code">k = objetivo / Σ(1..n)</span>). <b>Iguales:</b> todas valen lo mismo. Sin decimales (mínimo $1); la última absorbe el resto para sumar exacto.</p>
@@ -697,13 +708,14 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260830.1227";
+const APP_VERSION = "v.260830.1234";
 
 const state = {
   objetivo: 100000,
   numDep: 100,
   dolar: 1,
   tipo: "progresivo",  // sistema de cuotas: "progresivo" (creciente) | "iguales" (fijo)
+  frecuencia: "cantidad",  // "semanal" | "quincenal" | "mensual" | "cantidad" (define Nº de cuotas solo o manual)
   planId: null,      // id del reto (plan) en Supabase — se setea al abrir/crear reto
   nombre: null,      // nombre del reto (lo elige el usuario)
   fechaInicio: null,   // ISO date — se setea al crear/recalcular el plan
@@ -853,7 +865,7 @@ function ritmo(){
 function hacerBackup(silent=true){
   try{
     localStorage.setItem(STORE_KEY, JSON.stringify({
-      objetivo:state.objetivo, numDep:state.numDep, dolar:state.dolar, tipo:state.tipo,
+      objetivo:state.objetivo, numDep:state.numDep, dolar:state.dolar, tipo:state.tipo, frecuencia:state.frecuencia,
       fechaInicio:state.fechaInicio, fechaFin:state.fechaFin,
       cuotas:state.cuotas, historial:state.historial, ts:Date.now()
     }));
@@ -869,6 +881,7 @@ function restaurarBackup(){
     state.numDep = d.numDep ?? state.numDep;
     state.dolar = d.dolar ?? state.dolar;
     state.tipo = d.tipo ?? "progresivo";
+    state.frecuencia = d.frecuencia ?? "cantidad";
     state.fechaInicio = d.fechaInicio ?? null;
     state.fechaFin = d.fechaFin ?? null;
     state.cuotas = Array.isArray(d.cuotas) ? d.cuotas : state.cuotas;
@@ -1335,7 +1348,7 @@ function comprar(){
 /* ---- export/import ---- */
 function exportar(){
   const data = {app:"Reto de Ahorro Dashboard",version:2,exportedAt:new Date().toISOString(),
-    objetivo:state.objetivo,numDep:state.numDep,dolar:state.dolar,tipo:state.tipo,cuotas:state.cuotas,historial:state.historial};
+    objetivo:state.objetivo,numDep:state.numDep,dolar:state.dolar,tipo:state.tipo,frecuencia:state.frecuencia,cuotas:state.cuotas,historial:state.historial};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
   const url=URL.createObjectURL(blob); const a=document.createElement("a");
   a.href=url; a.download=`reto-ahorro-${new Date().toISOString().slice(0,10)}.json`;
@@ -1344,7 +1357,7 @@ function exportar(){
 }
 function importar(file){ const r=new FileReader(); r.onload=()=>{ try{
   const d=JSON.parse(r.result);
-  state.objetivo=d.objetivo??state.objetivo; state.numDep=d.numDep??state.numDep; state.dolar=d.dolar??state.dolar; state.tipo=d.tipo??state.tipo;
+  state.objetivo=d.objetivo??state.objetivo; state.numDep=d.numDep??state.numDep; state.dolar=d.dolar??state.dolar; state.tipo=d.tipo??state.tipo; state.frecuencia=d.frecuencia??state.frecuencia;
   if(Array.isArray(d.cuotas)) state.cuotas=d.cuotas.map(c=>({n:+c.n,monto:+c.monto,paid:!!c.paid}));
   if(Array.isArray(d.historial)) state.historial=d.historial;
   inObj.value=state.objetivo; inNum.value=state.numDep; inDolar.value=state.dolar;
@@ -1373,6 +1386,33 @@ navVer.textContent = APP_VERSION;
 if (buildVer) buildVer.textContent = APP_VERSION;
 
 /* ---- helpers de arranque (puerta de login / modo local) ---- */
+/* ---- Calcular Nº de cuotas según frecuencia (semanal/quincenal/mensual) ---- */
+function cuotasPorFrecuencia(frec, iniVal, finVal){
+  const ini = new Date(iniVal + 'T12:00:00');
+  const fin = new Date(finVal + 'T12:00:00');
+  if (isNaN(ini) || isNaN(fin) || fin <= ini) return 0;
+  const dias = Math.round((fin - ini) / 86400000);
+  if (frec === "semanal") return Math.max(1, Math.round(dias / 7));
+  if (frec === "quincenal") return Math.max(1, Math.round(dias / 15));
+  if (frec === "mensual") return Math.max(1, Math.round(dias / 30));
+  return 0;
+}
+/* Ajustar el campo Nº de Cuotas: automático (solo lectura) o editable (cantidad) */
+function actualizarNumCuotas(){
+  const el = document.getElementById('inNum');
+  const frec = state.frecuencia || "cantidad";
+  if (frec === "cantidad"){
+    el.disabled = false;
+  } else {
+    const ini = document.getElementById('inFechaInicio');
+    const fin = document.getElementById('inFechaFin');
+    if (ini && fin && ini.value && fin.value){
+      const n = cuotasPorFrecuencia(frec, ini.value, fin.value);
+      if (n > 0) el.value = n;
+    }
+    el.disabled = true;
+  }
+}
 function syncInputs(){
   inObj.value = state.objetivo; inNum.value = state.numDep; inDolar.value = state.dolar;
   const t = document.getElementById('inTipo');
@@ -1382,6 +1422,9 @@ function syncInputs(){
   if (!state.fechaInicio) state.fechaInicio = todayISO();
   const i = document.getElementById('inFechaInicio');
   if (i){ const d=new Date(state.fechaInicio); i.value = d.toISOString().slice(0,10); }
+  const fr = document.getElementById('inFrecuencia');
+  if (fr) fr.value = state.frecuencia || "cantidad";
+  actualizarNumCuotas();
 }
 function seedNewPlan(){
   state.cuotas = resetear(state.objetivo, state.numDep);
@@ -1465,7 +1508,7 @@ function bootLocal(){
 
   function loadCloud(snap){
     state.objetivo=snap.objetivo; state.numDep=snap.numDep; state.dolar=snap.dolar;
-    state.tipo=snap.tipo||"progresivo";
+    state.tipo=snap.tipo||"progresivo"; state.frecuencia="cantidad";
     state.fechaInicio=snap.fechaInicio||null; state.fechaFin=snap.fechaFin||null;
     state.cuotas=snap.cuotas||[]; state.historial=snap.historial||[];
   }
@@ -1499,7 +1542,7 @@ function bootLocal(){
     if (!acc){ toast('No se pudo crear el reto'); return; }
     // arrancar en cero: sin objetivo ni cuotas, sin plan generado,
     // solo con el marcador de inicio del reto en el historial
-    state.objetivo=0; state.numDep=0; state.dolar=1; state.tipo="progresivo";
+    state.objetivo=0; state.numDep=0; state.dolar=1; state.tipo="progresivo"; state.frecuencia="cantidad";
     state.fechaInicio=todayISO(); state.fechaFin=null;
     state.cuotas = [];              // todavía no hay plan configurado
     state.historial = [{ tipo:"plan", fecha: nowIso(), texto: "--- RETO: "+nombre+" ---" }];
@@ -1607,6 +1650,7 @@ inDolar.addEventListener("input", ()=>{ state.dolar=Math.max(0,Math.round(Number
 const inFechaFin = document.getElementById('inFechaFin');
 if (inFechaFin) inFechaFin.addEventListener("change", ()=>{
   state.fechaFin = inFechaFin.value ? new Date(inFechaFin.value + 'T12:00:00').toISOString() : null;
+  actualizarNumCuotas();
   hacerBackup(); render();
   toast(state.fechaFin ? "Fecha de finalización guardada" : "Fecha de finalización quitada");
 });
@@ -1614,8 +1658,16 @@ if (inFechaFin) inFechaFin.addEventListener("change", ()=>{
 const inFechaInicio = document.getElementById('inFechaInicio');
 if (inFechaInicio) inFechaInicio.addEventListener("change", ()=>{
   state.fechaInicio = inFechaInicio.value ? new Date(inFechaInicio.value + 'T12:00:00').toISOString() : todayISO();
+  actualizarNumCuotas();
   hacerBackup(); render();
   toast("Fecha de inicialización guardada");
+});
+// frecuencia de pago: define Nº de cuotas solo (semanal/quincenal/mensual) o manual (cantidad)
+const inFrecuencia = document.getElementById('inFrecuencia');
+if (inFrecuencia) inFrecuencia.addEventListener("change", ()=>{
+  state.frecuencia = inFrecuencia.value;
+  actualizarNumCuotas();
+  hacerBackup(); render();
 });
 // tipo de plan: cambiar de sistema a mitad de plan (recalcula pendientes + aviso)
 if (inTipo) inTipo.addEventListener("change", ()=> cambiarSistema(inTipo.value));
