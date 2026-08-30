@@ -4,22 +4,22 @@
 > Ejemplo de referencia: **objetivo u$s 1.000 · 100 cuotas · 200 días**.
 > Sirve de guía simple (no verbosa) de qué hace cada acción/botón. Las notas de UI (colores, light/dark) se agregan después sobre cada regla.
 
-## Configuración de cuenta (obligatoria)
+## Configuración de reto (obligatoria)
 
-Cada cuenta, para poder operar, **debe** tener estos 6 datos configurados (sí o sí). Sin ellos no hay plan ni pagos:
+Cada reto, para poder operar, **debe** tener estos 6 datos configurados (sí o sí). Sin ellos no hay plan ni pagos:
 
 | Campo | Qué es | Regla |
 |---|---|---|
-| **Objetivo** | Total a ahorrar, en u$s | Entero > 0 y **mayor que el Nº de depósitos** |
-| **N.º de depósitos** | Cuántas cuotas tiene el plan | Entero > 0 |
+| **Objetivo** | Total a ahorrar, en u$s | Entero > 0 y **mayor que el Nº de cuotas** |
+| **N.º de cuotas** | Cuántas cuotas tiene el plan | Entero > 0 |
 | **Tipo de plan** | Sistema de cuotas | `Progresivo` (crecientes) o `Iguales` (fija) |
 | **Fecha de inicialización** | Día en que arranca el reto | Editable por el usuario · cuota 1 = este día |
 | **Fecha de finalización** | Día objetivo de cierre | Editable por el usuario · cuota N (última) = este día |
-| **Cotización del dólar (día de creación)** | Tipo de cambio u$s → ARS del día en que se crea la cuenta | Entero > 0 (sin decimales) · referencia inicial |
+| **Cotización del dólar (día de creación)** | Tipo de cambio u$s → ARS del día en que se crea el reto | Entero > 0 (sin decimales) · referencia inicial |
 
 La cotización **no queda congelada**: al pagar, si el dólar cambió, se usa la cotización **del momento de pagar** (ver [Cotización del dólar](#cotización-del-dólar)).
 
-**Validación de objetivo:** el objetivo **siempre debe ser mayor que el Nº de depósitos**. Si no, se muestra un **modal de aviso** y no se permite continuar.
+**Validación de objetivo:** el objetivo **siempre debe ser mayor que el Nº de cuotas**. Si no, se muestra un **modal de aviso** y no se permite continuar.
 
 ## Fórmulas base
 
@@ -45,7 +45,7 @@ La cotización **no queda congelada**: al pagar, si el dólar cambió, se usa la
 
 ## Cotización del dólar
 
-- Al **crear** la cuenta se guarda la cotización del día (referencia inicial), como **número entero**.
+- Al **crear** el reto se guarda la cotización del día (referencia inicial), como **número entero**.
 - Al **pagar**, la app permite actualizar la cotización: si el dólar cambió, el pago se registra con la cotización **del momento de pagar** (no la de creación).
 - La cotización vigente del dashboard **se actualiza a la última pagada**, hasta el próximo pago.
 - Cada pago guarda su **propia cotización** (`rate`) en el historial, junto al monto en pesos (`monto u$s × rate`).
@@ -74,7 +74,7 @@ Al **pagar**, se recalcula cuántos días quedan hasta la fecha de finalización
 | Acción (botón) | Cuotas | Fechas | Cotización | Historial | Guardado |
 |---|---|---|---|---|---|
 | **Inicializar / Recalcular** | Regenera las 100 cuotas (todas **pendientes**), montos `k·i` progresivos truncados, última absorbe el resto | Cuota 1 = fecha de inicialización · cuota 100 = fin · resto a cadencia ~2 días | Guarda la cotización del día (creación) | **Vacía el historial** y añade separador `--- NUEVO PLAN ---` (objetivo u$s y $) | backup + nube |
-| **Entrar / abrir cuenta** | Carga las cuotas y su estado (pagada/pendiente) | Si no tienen fecha, asigna cuota 1 = inicio → fin | Carga la cotización guardada | Carga el historial | — |
+| **Entrar / abrir reto** | Carga las cuotas y su estado (pagada/pendiente) | Si no tienen fecha, asigna cuota 1 = inicio → fin | Carga la cotización guardada | Carga el historial | — |
 | **Pagar 2 cuotas (mismo día)** | Marca esas 2 como **pagadas**; las otras 98 quedan pendientes | Las 98 **impagas se re-esparcen**: la próxima vence `pago + 1·cadencia`, con `cadencia = díasFaltantes/98`; la última queda en fin. Las pagadas **conservan** su fecha | Se actualiza a la cotización del momento de pagar | Añade 2 filas `pago` (fecha, cotización, montos u$s/ARS, restante, acumulado) | backup + nube |
 | **Comprar (modal "Pagar cuotas")** | Igual que Pagar, pero en 3 pasos: 1) pide **cotización del dólar** → 2) **elegís cuotas** → 3) **Comprar** | Idem | Si el dólar cambió, se actualiza antes de pagar | Idem | backup + nube |
 | **Refrescar (render)** | Recalcula totales: pendientes, ahorrado, %, barra de progreso | Recalcula `faltan X días` y balance con el **día actual** | No toca | No toca | — |
@@ -83,7 +83,7 @@ Al **pagar**, se recalcula cuántos días quedan hasta la fecha de finalización
 
 ## Resumen de una línea
 
-- **Configurar cuenta** = fijar los 6 obligatorios: objetivo, depósitos, tipo de plan (progresivo/iguales), fecha de inicio (editable), fecha de fin (editable) y cotización del día.
+- **Configurar reto** = fijar los 6 obligatorios: objetivo, cuotas, tipo de plan (progresivo/iguales), fecha de inicio (editable), fecha de fin (editable) y cotización del día.
 - **Montos** = **Progresivo** `k·i` o **Iguales** `objetivo/n`, **sin decimales** (mínimo $1), la **última absorbe el resto** (suma exacta).
 - **Cambiar sistema** = recalculá solo las pendientes (las pagadas no se tocan) y deja un aviso en el historial.
 - **Recalcular / Limpiar historial** = arrancar de cero (regenera montos y fechas, vacía el historial y deja un separador `NUEVO PLAN`).

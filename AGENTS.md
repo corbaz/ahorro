@@ -15,7 +15,7 @@ El archivo origen vive en `/Users/jucorbaz/www/dsh/ahorro.xlsm` y NO se versiona
 
 | Macro / hoja VBA | Implementación en el dashboard | Estado |
 |---|---|---|
-| Hoja **Ahorro** (objetivo, Nº depósitos, cuotas) | Estado `state.objetivo`, `state.numDep`, `state.cuotas[]` | ✅ |
+| Hoja **Ahorro** (objetivo, Nº cuotas, cuotas) | Estado `state.objetivo`, `state.numDep`, `state.cuotas[]` | ✅ |
 | Hoja **backup** (copia de seguridad) | `hacerBackup()` → `localStorage` + Export/Import JSON | ✅ |
 | Hoja **historial** (9 columnas, acumula pagos) | `state.historial[]` + tabla "Historial de pagos" | ✅ |
 | `Módulo1.Resetear()` (fórmula progresiva + separador en historial) | `resetear()` + `recalcular()` con modal de confirmación | ✅ |
@@ -86,9 +86,9 @@ Al cambiar el schema del estado, subí la versión de la clave (`/v3`) para no m
 
 ## Supabase (login + sync nube)
 
-- **Migración SQL**: `supabase/migrations/0001_init.sql` (tablas `planes`, `cuotas`, `historial` + RLS `auth.uid() = user_id`) y `0002_multi_accounts.sql` (varias cuentas por mail: PK `id` en `planes`, columna `nombre`, `plan_id` en `cuotas`/`historial`, unique `(user_id, nombre)` y `(plan_id, n)`)
-- **SDK JS**: `supabase-sync.js` — carga `@supabase/supabase-js` UMD por CDN, login Google, listar/crear/abrir cuentas por plan
-- **Modelo de cuenta**: el login es la **puerta de entrada**; un mismo mail (auth.uid) puede tener **varias cuentas** distinguidas por el `nombre` que elige el usuario (p. ej. "Casa" y "Auto"). `state.planId` y `state.nombre` identifican la cuenta activa.
+- **Migración SQL**: `supabase/migrations/0001_init.sql` (tablas `planes`, `cuotas`, `historial` + RLS `auth.uid() = user_id`) y `0002_multi_accounts.sql` (varios retos por mail: PK `id` en `planes`, columna `nombre`, `plan_id` en `cuotas`/`historial`, unique `(user_id, nombre)` y `(plan_id, n)`)
+- **SDK JS**: `supabase-sync.js` — carga `@supabase/supabase-js` UMD por CDN, login Google, listar/crear/abrir retos por plan
+- **Modelo de reto**: el login es la **puerta de entrada**; un mismo mail (auth.uid) puede tener **varios retos** distinguidos por el `nombre` que elige el usuario (p. ej. "Casa" y "Auto"). `state.planId` y `state.nombre` identifican el reto activo.
 - **Config local**: `supabase/config.json` (NO se versiona, está en .gitignore) — `{projectUrl, anonKey}`
 - Si `config.json` tiene valores placeholder (`XXXXX`), la app queda en modo local (sin login)
 - `syncToCloud()` se llama tras cada cambio de estado (pago, recálculo, import) si hay sesión **y** `state.planId`

@@ -23,11 +23,11 @@ python3 -m http.server 4321
 
 ## De qué se trata
 
-Un **desafío de ahorro**: definís un **Total Objetivo** y un **Nº de Depósitos**, y la app reparte el monto en cuotas crecientes (`cuota n = k·n`, `k = objetivo / Σ(1..n)`). A medida que pagás las cuotas, el dashboard lleva el progreso (ahorrado vs. restante) y **acumula cada pago en un historial** con fecha, cotización dólar y montos en u$s / $.
+Un **desafío de ahorro**: definís un **Total Objetivo** y un **Nº de Cuotas**, y la app reparte el monto en cuotas crecientes (`cuota n = k·n`, `k = objetivo / Σ(1..n)`). A medida que pagás las cuotas, el dashboard lleva el progreso (ahorrado vs. restante) y **acumula cada pago en un historial** con fecha, cotización dólar y montos en u$s / $.
 
 ## Funciones
 
-- **KPIs en vivo**: total objetivo, depósitos, ahorrado y restante (en dólares y pesos).
+- **KPIs en vivo**: total objetivo, cuotas, ahorrado y restante (en dólares y pesos).
 - **Grilla de cuotas** con filtro Todas / Pendientes / Pagadas.
 - **Modal "Pagar cuotas"**: tildás las que pagaste y se registran solas.
 - **Historial de pagos** con las 9 columnas (fecha, cuota, cotización, montos en u$s y $, restante y acumulado).
@@ -122,7 +122,7 @@ Usá **Exportar JSON** para respaldar y **Importar JSON** para restaurar en otra
 
 ## Login y sync en la nube (Supabase)
 
-La app funciona **sin cuenta** (modo local, `localStorage`). Para guardar el progreso en la nube y verlo desde cualquier dispositivo:
+La app funciona **sin reto** (modo local, `localStorage`). Para guardar el progreso en la nube y verlo desde cualquier dispositivo:
 
 ### Setup (una sola vez)
 
@@ -140,13 +140,13 @@ La app funciona **sin cuenta** (modo local, `localStorage`). Para guardar el pro
 
 ### Cómo funciona
 
-- **El login es la puerta de entrada**: al abrir la app primero iniciás sesión con Google. Un mismo mail puede tener **varias cuentas**, que se distinguen por el **nombre** que elegís.
-- Tras el login se listan tus cuentas: abrís una o creás una nueva con su nombre (p. ej. **"Casa"** y **"Auto"**).
-- Cada cuenta es un **plan completo** (objetivo, cuotas, historial). Un mismo mail puede tener varias cuentas con nombres distintos.
+- **El login es la puerta de entrada**: al abrir la app primero iniciás sesión con Google. Un mismo mail puede tener **varios retos**, que se distinguen por el **nombre** que elegís.
+- Tras el login se listan tus retos: abrís uno o creás uno nuevo con su nombre (p. ej. **"Casa"** y **"Auto"**).
+- Cada reto es un **plan completo** (objetivo, cuotas, historial). Un mismo mail puede tener varios retos con nombres distintos.
 - Cada usuario ve **solo sus propios datos** (Row Level Security en Postgres).
-- Los pagos y recálculos se sincronizan a la nube automáticamente, **por cuenta**.
+- Los pagos y recálculos se sincronizan a la nube automáticamente, **por reto**.
 
-### Sin cuenta
+### Sin reto
 
 Si no configurás Supabase, la app sigue funcionando en modo local (todo en `localStorage`). El botón "Ingresar" no aparece hasta que `supabase/config.json` tenga valores reales.
 
