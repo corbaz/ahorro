@@ -184,6 +184,9 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 /* input date */
 .input[type=date]{font-family:var(--f-display);font-weight:600;color-scheme:dark}
 [data-theme="light"] .input[type=date]{color-scheme:light}
+/* select */
+select.input{font-family:var(--f-display);font-weight:600;color-scheme:dark;cursor:pointer}
+[data-theme="light"] select.input{color-scheme:light}
 
 /* ritmo de ahorro */
 .ritmo{display:flex;flex-direction:column;gap:1.4rem}
@@ -425,7 +428,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260829.1019</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260830.1017</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -469,10 +472,16 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
         <div class="field"><label>Fecha de inicialización</label><input class="input" id="inFechaInicio" type="date"/></div>
         <div class="field"><label>Fecha de finalización</label><input class="input" id="inFechaFin" type="date"/></div>
       </div>
-      <div class="cfg__row cfg__row--full">
+      <div class="cfg__row">
+        <div class="field"><label>Tipo de plan</label>
+          <select class="input" id="inTipo">
+            <option value="progresivo">Progresivo (cuotas crecientes)</option>
+            <option value="iguales">Iguales (cuota fija)</option>
+          </select>
+        </div>
         <div class="field"><label>Cotización dólar (1 u$s = … $)</label><div class="input__wrap"><span class="pre">$</span><input class="input" id="inDolar" type="number" min="1" step="1" value="1" inputmode="numeric"/></div></div>
       </div>
-      <p class="cfg__note">Las cuotas crecen de a poco: cada una vale <span class="code">k·n</span> con <span class="code">k = objetivo / Σ(1..n)</span>, truncada sin decimales (mínimo $1); la última absorbe el resto para sumar exacto.</p>
+      <p class="cfg__note"><b>Progresivo:</b> las cuotas crecen de a poco (<span class="code">k·n</span>, con <span class="code">k = objetivo / Σ(1..n)</span>). <b>Iguales:</b> todas valen lo mismo. Sin decimales (mínimo $1); la última absorbe el resto para sumar exacto.</p>
       <div class="cfg__actions">
         <button class="btn btn--primary" id="btnRecalc"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></svg> Recalcular <span class="btn__chev"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></button>
       </div>
@@ -693,12 +702,13 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260829.1019";
+const APP_VERSION = "v.260830.1017";
 
 const state = {
   objetivo: 100000,
   numDep: 100,
   dolar: 1,
+  tipo: "progresivo",  // sistema de cuotas: "progresivo" (creciente) | "iguales" (fijo)
   planId: null,      // id de la cuenta (plan) en Supabase — se setea al abrir/crear cuenta
   nombre: null,      // nombre de la cuenta (lo elige el usuario)
   fechaInicio: null,   // ISO date — se setea al crear/recalcular el plan
@@ -712,28 +722,39 @@ const state = {
   _sel: new Set(),
 };
 
-/* ---- Calendario de cuotas crecientes (fórmula progresiva / triangular) ----
-   Montos SIN decimales: cuota i = k·i truncada (mínimo $1),
-   y la ÚLTIMA cuota absorbe todo el resto para que la suma sea exacta = objetivo. */
-function resetear(objetivo, numDep){
+/* ---- Generar montos de cuotas (sin decimales, suma exacta) ----
+   tipo "progresivo": cuota i = k·i truncada (mínimo $1), última absorbe el resto.
+   tipo "iguales":    cuota fija = amount/count truncada, última absorbe el resto. */
+function generarMontos(amount, count, tipo){
+  amount = Math.max(1, Math.round(Number(amount) || 0));
+  count = Math.max(1, Math.round(Number(count) || 1));
+  const montos = [];
+  let acum = 0;
+  if (tipo === "iguales"){
+    const base = Math.max(1, Math.floor(amount / count));
+    for (let i = 1; i <= count; i++){
+      const monto = (i === count) ? (amount - acum) : base;
+      acum += monto; montos.push(monto);
+    }
+  } else { // progresivo (default)
+    const tri = count * (count + 1) / 2;
+    const k = amount / tri;
+    for (let i = 1; i <= count; i++){
+      let monto;
+      if (i === count) monto = amount - acum;      // la última absorbe todo el resto
+      else { monto = Math.floor(k * i); if (monto < 1) monto = 1; }  // truncar, mínimo $1
+      acum += monto; montos.push(monto);
+    }
+  }
+  return montos;
+}
+
+/* ---- Generar las cuotas del plan (objetos {n, monto, paid:false}) ---- */
+function resetear(objetivo, numDep, tipo){
   objetivo = Math.max(1, Math.round(Number(objetivo) || 0));
   numDep = Math.max(1, Math.min(100, Math.round(Number(numDep) || 1)));
-  const tri = numDep * (numDep + 1) / 2;
-  const k = objetivo / tri;                 // unidad base (fórmula progresiva)
-  const cuotas = [];
-  let acum = 0;
-  for (let dep = 1; dep <= numDep; dep++){
-    let monto;
-    if (dep === numDep){
-      monto = objetivo - acum;              // la última absorbe todo el resto
-    } else {
-      monto = Math.floor(k * dep);          // truncar (redondeo hacia abajo)
-      if (monto < 1) monto = 1;             // todo valor >0 y <1 se fuerza a 1 (nunca $0)
-    }
-    acum += monto;
-    cuotas.push({ n: dep, monto, paid:false });
-  }
-  return cuotas;
+  tipo = tipo || state.tipo || "progresivo";
+  return generarMontos(objetivo, numDep, tipo).map((monto, idx) => ({ n: idx+1, monto, paid:false }));
 }
 
 /* ---- helpers de fechas de vencimiento ---- */
@@ -839,7 +860,7 @@ function ritmo(){
 function hacerBackup(silent=true){
   try{
     localStorage.setItem(STORE_KEY, JSON.stringify({
-      objetivo:state.objetivo, numDep:state.numDep, dolar:state.dolar,
+      objetivo:state.objetivo, numDep:state.numDep, dolar:state.dolar, tipo:state.tipo,
       fechaInicio:state.fechaInicio, fechaFin:state.fechaFin,
       cuotas:state.cuotas, historial:state.historial, ts:Date.now()
     }));
@@ -854,6 +875,7 @@ function restaurarBackup(){
     state.objetivo = d.objetivo ?? state.objetivo;
     state.numDep = d.numDep ?? state.numDep;
     state.dolar = d.dolar ?? state.dolar;
+    state.tipo = d.tipo ?? "progresivo";
     state.fechaInicio = d.fechaInicio ?? null;
     state.fechaFin = d.fechaFin ?? null;
     state.cuotas = Array.isArray(d.cuotas) ? d.cuotas : state.cuotas;
@@ -915,6 +937,7 @@ function recalcular(){
   const numRaw = Number(inNum.value);
   const fin = document.getElementById('inFechaFin');
   const ini = document.getElementById('inFechaInicio');
+  const tipoEl = document.getElementById('inTipo');
   const dolar = Math.round(Number(inDolar.value) || 0);
   // validar los datos obligatorios (valores crudos)
   if (!isFinite(objRaw) || objRaw <= 0){ toast('Poné el Total Objetivo', true); inObj.focus(); return; }
@@ -926,6 +949,7 @@ function recalcular(){
   // validación: objetivo siempre mayor que el nº de depósitos
   if (obj <= num){ avisar('El Total Objetivo debe ser mayor que el Nº de depósitos (' + num + '). Ajustá los valores e intentá de nuevo.'); inObj.focus(); return; }
   state.objetivo = obj; state.numDep = num; state.dolar = dolar;
+  state.tipo = (tipoEl && tipoEl.value) || "progresivo";
   // fecha de inicio: editable por el usuario; si no se puso, arranca hoy
   state.fechaInicio = (ini && ini.value) ? new Date(ini.value + 'T12:00:00').toISOString() : todayISO();
   state.fechaFin = new Date(fin.value + 'T12:00:00').toISOString();
@@ -933,6 +957,36 @@ function recalcular(){
   hacerBackup(); syncToCloud();
   render();
   toast("Plan recalculado y registrado en el historial");
+}
+
+/* ---- Cambiar de sistema de cuotas a mitad de plan ----
+   Las cuotas PAGADAS quedan intactas (hechos históricos); las PENDIENTES
+   se recalculan para repartir lo que falta, y se deja un aviso en el historial. */
+function cambiarSistema(nuevoTipo){
+  if (!nuevoTipo || nuevoTipo === state.tipo) return;
+  const oldTipo = state.tipo;
+  if (!state.cuotas.length){
+    state.tipo = nuevoTipo; hacerBackup(); syncToCloud(); render();
+    return;
+  }
+  const pagadas = state.cuotas.filter(c => c.paid);
+  const pend = state.cuotas.filter(c => !c.paid).sort((a,b)=>a.n-b.n);
+  const pagado = sumUsd(pagadas);
+  const restante = state.objetivo - pagado;
+  // borde: queda menos plata que cuotas pendientes (no alcanza para $1 por cuota)
+  if (restante < pend.length){
+    avisar('No se puede cambiar de sistema: queda u$s ' + fmtNum(restante) + ' por repartir en ' + pend.length + ' cuotas pendientes (menos de $1 por cuota).');
+    const sel = document.getElementById('inTipo'); if (sel) sel.value = state.tipo;
+    return;
+  }
+  const montos = generarMontos(restante, pend.length, nuevoTipo);
+  pend.forEach((c,i)=> c.monto = montos[i]);
+  state.tipo = nuevoTipo;
+  if (pagadas.length){
+    state.historial.push({ tipo:"plan", fecha: nowIso(), texto: `--- CAMBIO DE SISTEMA: ${oldTipo} → ${nuevoTipo} ---` });
+  }
+  hacerBackup(); syncToCloud(); render();
+  toast(pagadas.length ? `Sistema cambiado a ${nuevoTipo} · cuotas pendientes recalculadas` : `Tipo de plan: ${nuevoTipo}`);
 }
 
 function setFilter(f){ state.filter=f; filters.querySelectorAll(".chip").forEach(b=>b.classList.toggle("is-active",b.dataset.f===f)); renderCuotas(); }
@@ -1311,7 +1365,7 @@ function comprar(){
 /* ---- export/import ---- */
 function exportar(){
   const data = {app:"Reto de Ahorro Dashboard",version:2,exportedAt:new Date().toISOString(),
-    objetivo:state.objetivo,numDep:state.numDep,dolar:state.dolar,cuotas:state.cuotas,historial:state.historial};
+    objetivo:state.objetivo,numDep:state.numDep,dolar:state.dolar,tipo:state.tipo,cuotas:state.cuotas,historial:state.historial};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
   const url=URL.createObjectURL(blob); const a=document.createElement("a");
   a.href=url; a.download=`reto-ahorro-${new Date().toISOString().slice(0,10)}.json`;
@@ -1320,7 +1374,7 @@ function exportar(){
 }
 function importar(file){ const r=new FileReader(); r.onload=()=>{ try{
   const d=JSON.parse(r.result);
-  state.objetivo=d.objetivo??state.objetivo; state.numDep=d.numDep??state.numDep; state.dolar=d.dolar??state.dolar;
+  state.objetivo=d.objetivo??state.objetivo; state.numDep=d.numDep??state.numDep; state.dolar=d.dolar??state.dolar; state.tipo=d.tipo??state.tipo;
   if(Array.isArray(d.cuotas)) state.cuotas=d.cuotas.map(c=>({n:+c.n,monto:+c.monto,paid:!!c.paid}));
   if(Array.isArray(d.historial)) state.historial=d.historial;
   inObj.value=state.objetivo; inNum.value=state.numDep; inDolar.value=state.dolar;
@@ -1338,7 +1392,7 @@ function avisar(msg){ $("avisoText").textContent = msg; $("modalAviso").classLis
    ============================================================ */
 const $ = (id)=>document.getElementById(id);
 const navPend=$("navPend"),track=$("track"),trackFill=$("trackFill"),trackRest=$("trackRest"),bigAhorrado=$("bigAhorrado"),bigObjetivo=$("bigObjetivo"),eyNumDep=$("eyNumDep"),legDone=$("legDone"),legRest=$("legRest"),legCuotas=$("legCuotas"),tick25=$("tick25"),tick50=$("tick50"),tick75=$("tick75"),tick100=$("tick100"),kpiObj=$("kpiObj"),kpiObjArs=$("kpiObjArs"),kpiNum=$("kpiNum"),kpiRest=$("kpiRest"),kpiRestArs=$("kpiRestArs"),fxPendUsd=$("fxPendUsd"),fxPendArs=$("fxPendArs"),fxPaidUsd=$("fxPaidUsd"),fxPaidArs=$("fxPaidArs"),cuotaGrid=$("cuotaGrid"),emptyState=$("emptyState"),filters=$("filters"),ledgerBody=$("ledgerBody"),ledgerEmpty=$("ledgerEmpty"),histCount=$("histCount"),histTotal=$("histTotal"),celebrate=$("celebrate"),toastZone=$("toastZone");
-const inObj=$("inObj"),inNum=$("inNum"),inDolar=$("inDolar");
+const inObj=$("inObj"),inNum=$("inNum"),inDolar=$("inDolar"),inTipo=$("inTipo");
 const modalPagar=$("modalPagar"),checklist=$("checklist"),mPendUsd=$("mPendUsd"),mPendArs=$("mPendArs"),mTildUsd=$("mTildUsd"),mTildArs=$("mTildArs"),modalRateShow=$("modalRateShow");
 const modalConfirm=$("modalConfirm");
 const modalRate=$("modalRate"),subRateDolar=$("subRateDolar");
@@ -1351,6 +1405,8 @@ if (buildVer) buildVer.textContent = APP_VERSION;
 /* ---- helpers de arranque (puerta de login / modo local) ---- */
 function syncInputs(){
   inObj.value = state.objetivo; inNum.value = state.numDep; inDolar.value = state.dolar;
+  const t = document.getElementById('inTipo');
+  if (t) t.value = state.tipo || "progresivo";
   const f = document.getElementById('inFechaFin');
   if (f && state.fechaFin){ const d=new Date(state.fechaFin); f.value = d.toISOString().slice(0,10); }
   if (!state.fechaInicio) state.fechaInicio = todayISO();
@@ -1439,6 +1495,7 @@ function bootLocal(){
 
   function loadCloud(snap){
     state.objetivo=snap.objetivo; state.numDep=snap.numDep; state.dolar=snap.dolar;
+    state.tipo=snap.tipo||"progresivo";
     state.fechaInicio=snap.fechaInicio||null; state.fechaFin=snap.fechaFin||null;
     state.cuotas=snap.cuotas||[]; state.historial=snap.historial||[];
   }
@@ -1472,7 +1529,7 @@ function bootLocal(){
     if (!acc){ toast('No se pudo crear la cuenta'); return; }
     // arrancar en cero: sin objetivo ni depósitos, sin plan generado,
     // solo con el marcador de inicio de la cuenta en el historial
-    state.objetivo=0; state.numDep=0; state.dolar=1;
+    state.objetivo=0; state.numDep=0; state.dolar=1; state.tipo="progresivo";
     state.fechaInicio=todayISO(); state.fechaFin=null;
     state.cuotas = [];              // todavía no hay plan configurado
     state.historial = [{ tipo:"plan", fecha: nowIso(), texto: "--- CUENTA: "+nombre+" ---" }];
@@ -1595,6 +1652,8 @@ if (inFechaInicio) inFechaInicio.addEventListener("change", ()=>{
   hacerBackup(); render();
   toast("Fecha de inicialización guardada");
 });
+// tipo de plan: cambiar de sistema a mitad de plan (recalcula pendientes + aviso)
+if (inTipo) inTipo.addEventListener("change", ()=> cambiarSistema(inTipo.value));
 // al enfocar un input, dejar el valor seleccionado para escribir encima
 function selOnFocus(el){ if(el){ el.addEventListener('focus', ()=>{ try{ el.select(); }catch(e){} }); } }
 [inObj, inNum, inDolar, subRateDolar, inFechaFin, inFechaInicio].forEach(selOnFocus);

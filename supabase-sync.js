@@ -98,7 +98,7 @@
     const { data, error } = await sb.from('planes').insert({
       user_id: user.id,
       nombre: nombre,
-      objetivo: 100000, num_dep: 100, dolar: 1,
+      objetivo: 100000, num_dep: 100, dolar: 1, tipo: 'progresivo',
       fecha_inicio: null, fecha_fin: null
     }).select('id, nombre').maybeSingle();
     if (error){ console.error('createAccount:', error.message); return null; }
@@ -126,7 +126,7 @@
     if (!plan) return null; // no existe
     return {
       id: plan.id, nombre: plan.nombre,
-      objetivo: plan.objetivo, numDep: plan.num_dep, dolar: plan.dolar,
+      objetivo: plan.objetivo, numDep: plan.num_dep, dolar: plan.dolar, tipo: plan.tipo || 'progresivo',
       fechaInicio: plan.fecha_inicio, fechaFin: plan.fecha_fin,
       cuotas: (cuotas || []).map(c => ({ n: c.n, monto: Number(c.monto), paid: c.paid })),
       historial: (hist || []).map(h => ({
@@ -144,7 +144,7 @@
     const uid = user.id;
     // actualizar el plan (upsert por id)
     const { error: e1 } = await sb.from('planes').update({
-      objetivo: state.objetivo, num_dep: state.numDep, dolar: state.dolar,
+      objetivo: state.objetivo, num_dep: state.numDep, dolar: state.dolar, tipo: state.tipo,
       fecha_inicio: state.fechaInicio, fecha_fin: state.fechaFin, updated_at: new Date().toISOString()
     }).eq('id', pid);
     if (e1) console.error('update planes:', e1.message);

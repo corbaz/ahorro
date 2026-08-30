@@ -6,12 +6,13 @@
 
 ## Configuración de cuenta (obligatoria)
 
-Cada cuenta, para poder operar, **debe** tener estos 5 datos configurados (sí o sí). Sin ellos no hay plan ni pagos:
+Cada cuenta, para poder operar, **debe** tener estos 6 datos configurados (sí o sí). Sin ellos no hay plan ni pagos:
 
 | Campo | Qué es | Regla |
 |---|---|---|
 | **Objetivo** | Total a ahorrar, en u$s | Entero > 0 y **mayor que el Nº de depósitos** |
 | **N.º de depósitos** | Cuántas cuotas tiene el plan | Entero > 0 |
+| **Tipo de plan** | Sistema de cuotas | `Progresivo` (crecientes) o `Iguales` (fija) |
 | **Fecha de inicialización** | Día en que arranca el reto | Editable por el usuario · cuota 1 = este día |
 | **Fecha de finalización** | Día objetivo de cierre | Editable por el usuario · cuota N (última) = este día |
 | **Cotización del dólar (día de creación)** | Tipo de cambio u$s → ARS del día en que se crea la cuenta | Entero > 0 (sin decimales) · referencia inicial |
@@ -32,6 +33,15 @@ La cotización **no queda congelada**: al pagar, si el dólar cambió, se usa la
 - **Ritmo ideal:** 1 cuota cada ~2 días (en pantalla se redondea a **2 días**).
 - **Balance:** `pagadas − esperadas`. **+** = adelantado (verde) · **−** = atrasado (rojo). Día 0 sin pagar = **0**.
 - **"vence":** en cuotas **pendientes** muestra `vence <fecha> · faltan X días` (recalculado con el día actual). En **pagadas** muestra `Pagada · <fecha del pago>`.
+
+## Tipo de plan (sistema de cuotas)
+
+- **Progresivo** (creciente): la cuota `i` vale `k·i`, con `k = objetivo / Σ(1..n)`. Arrancás pagando poco y terminás pagando más.
+- **Iguales** (fijo): `cuota = objetivo / n` truncada. Todas valen lo mismo; la **última absorbe el resto** para cerrar exacto.
+- **Cambio a mitad de plan:** si ya pagaste cuotas y cambiás de sistema, **las pagadas quedan intactas** y **solo las pendientes se recalculan** para repartir lo que falta (`objetivo − pagado`). Se deja un aviso `--- CAMBIO DE SISTEMA ---` en el historial.
+- **Borde:** si lo que falta por repartir es **menor** que las cuotas pendientes, **no se permite** cambiar (modal de aviso).
+
+**Ejemplo** (objetivo 5.000 · 10 cuotas): **Progresivo** → 90, 181, 272, …, 914 · **Iguales** → 500 × 10.
 
 ## Cotización del dólar
 
@@ -69,10 +79,12 @@ Al **pagar**, se recalcula cuántos días quedan hasta la fecha de finalización
 | **Comprar (modal "Pagar cuotas")** | Igual que Pagar, pero en 3 pasos: 1) pide **cotización del dólar** → 2) **elegís cuotas** → 3) **Comprar** | Idem | Si el dólar cambió, se actualiza antes de pagar | Idem | backup + nube |
 | **Refrescar (render)** | Recalcula totales: pendientes, ahorrado, %, barra de progreso | Recalcula `faltan X días` y balance con el **día actual** | No toca | No toca | — |
 | **Limpiar historial** | Regenera las 100 pendientes (igual que **Recalcular**) | Reasigna cuota 1 = inicio → fin | No toca | **Vacía el historial** y añade separador `--- NUEVO PLAN ---` (igual que Recalcular) | backup + nube |
+| **Cambiar sistema** | Recalcula **solo las pendientes** con el nuevo sistema; las pagadas quedan intactas | No toca fechas | No toca | Añade aviso `--- CAMBIO DE SISTEMA ---` | backup + nube |
 
 ## Resumen de una línea
 
-- **Configurar cuenta** = fijar los 5 obligatorios: objetivo, depósitos, fecha de inicio (editable), fecha de fin (editable) y cotización del día.
-- **Montos** = fórmula progresiva `k·i`, **sin decimales**: cuotas 1..N−1 truncadas (mínimo $1), la **última absorbe el resto** (suma exacta).
+- **Configurar cuenta** = fijar los 6 obligatorios: objetivo, depósitos, tipo de plan (progresivo/iguales), fecha de inicio (editable), fecha de fin (editable) y cotización del día.
+- **Montos** = **Progresivo** `k·i` o **Iguales** `objetivo/n`, **sin decimales** (mínimo $1), la **última absorbe el resto** (suma exacta).
+- **Cambiar sistema** = recalculá solo las pendientes (las pagadas no se tocan) y deja un aviso en el historial.
 - **Recalcular / Limpiar historial** = arrancar de cero (regenera montos y fechas, vacía el historial y deja un separador `NUEVO PLAN`).
 - **Pagar / Comprar** = tilda pagadas + re-esparce las impagas desde el día del pago (nueva cadencia) + suma al historial con la cotización del momento.
