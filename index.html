@@ -184,9 +184,11 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f-display);font-siz
 /* input date */
 .input[type=date]{font-family:var(--f-display);font-weight:600;color-scheme:dark}
 [data-theme="light"] .input[type=date]{color-scheme:light}
-/* select */
-select.input{font-family:var(--f-display);font-weight:600;color-scheme:dark;cursor:pointer}
+/* select (mantiene los colores del tema, incluso en el listado desplegable) */
+select.input{font-family:var(--f-display);font-weight:600;cursor:pointer;color:var(--txt);background:var(--inset-bg);color-scheme:dark;-webkit-appearance:auto;appearance:auto}
+select.input option{color:var(--txt);background:var(--bg-2)}
 [data-theme="light"] select.input{color-scheme:light}
+[data-theme="light"] select.input option{color:#0e1116;background:#ffffff}
 
 /* ritmo de ahorro */
 .ritmo{display:flex;flex-direction:column;gap:1.4rem}
@@ -428,7 +430,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260830.1017</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260830.1021</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -702,7 +704,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260830.1017";
+const APP_VERSION = "v.260830.1021";
 
 const state = {
   objetivo: 100000,
@@ -922,12 +924,13 @@ function registrarPagos(selectedNs){
 function armarPlanCero(obj, num, dolar){
   state.cuotas = resetear(obj, num);   // regenera TODAS las cuotas (pendientes)
   asignarFechasPlan();                 // fecha de vencimiento de cada cuota
+  const sistema = state.tipo === "iguales" ? "Iguales" : "Progresivo";
   // conservar el marcador de cuenta (si existe) y dejar UN separador NUEVO PLAN
   const accMarker = state.historial.filter(h => h.tipo==="plan" && String(h.texto||"").indexOf("--- CUENTA:")===0);
   state.historial = [
     ...accMarker,
     { tipo:"plan", fecha: nowIso(), objetivo: obj, numDep: num,
-      texto: `--- NUEVO PLAN: objetivo u$s ${fmtNum(obj)} ($ ${fmtNum(obj * dolar)})  |  ${num} cuotas  |  ${fmtDate(nowIso())} ---` }
+      texto: `--- NUEVO PLAN: ${sistema} · objetivo u$s ${fmtNum(obj)} ($ ${fmtNum(obj * dolar)})  |  ${num} cuotas  |  ${fmtDate(nowIso())} ---` }
   ];
 }
 
