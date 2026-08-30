@@ -76,7 +76,7 @@ Al **pagar**, se recalcula cuántos días quedan hasta la fecha de finalización
 | **Inicializar / Recalcular** | Regenera las 100 cuotas (todas **pendientes**), montos `k·i` progresivos truncados, última absorbe el resto | Cuota 1 = fecha de inicialización · cuota 100 = fin · resto a cadencia ~2 días | Guarda la cotización del día (creación) | **Vacía el historial** y añade separador `--- NUEVO PLAN ---` (objetivo u$s y $) | backup + nube |
 | **Entrar / abrir reto** | Carga las cuotas y su estado (pagada/pendiente) | Si no tienen fecha, asigna cuota 1 = inicio → fin | Carga la cotización guardada | Carga el historial | — |
 | **Pagar 2 cuotas (mismo día)** | Marca esas 2 como **pagadas**; las otras 98 quedan pendientes | Las 98 **impagas se re-esparcen**: la próxima vence `pago + 1·cadencia`, con `cadencia = díasFaltantes/98`; la última queda en fin. Las pagadas **conservan** su fecha | Se actualiza a la cotización del momento de pagar | Añade 2 filas `pago` (fecha, cotización, montos u$s/ARS, restante, acumulado) | backup + nube |
-| **Comprar (modal "Pagar cuotas")** | Igual que Pagar, pero en 3 pasos: 1) pide **cotización del dólar** → 2) **elegís cuotas** → 3) **Comprar** | Idem | Si el dólar cambió, se actualiza antes de pagar | Idem | backup + nube |
+| **Pagar (modal "Pagar cuotas")** | Igual que Pagar, pero en 3 pasos: 1) pide **cotización del dólar** → 2) **elegís cuotas** → 3) **Pagar** | Idem | Si el dólar cambió, se actualiza antes de pagar | Idem | backup + nube |
 | **Refrescar (render)** | Recalcula totales: pendientes, ahorrado, %, barra de progreso | Recalcula `faltan X días` y balance con el **día actual** | No toca | No toca | — |
 | **Limpiar historial** | Regenera las 100 pendientes (igual que **Recalcular**) | Reasigna cuota 1 = inicio → fin | No toca | **Vacía el historial** y añade separador `--- NUEVO PLAN ---` (igual que Recalcular) | backup + nube |
 | **Cambiar sistema** | Recalcula **solo las pendientes** con el nuevo sistema; las pagadas quedan intactas | No toca fechas | No toca | Añade aviso `--- CAMBIO DE SISTEMA ---` | backup + nube |
@@ -87,4 +87,4 @@ Al **pagar**, se recalcula cuántos días quedan hasta la fecha de finalización
 - **Montos** = **Progresivo** `k·i` o **Iguales** `objetivo/n`, **sin decimales** (mínimo $1), la **última absorbe el resto** (suma exacta).
 - **Cambiar sistema** = recalculá solo las pendientes (las pagadas no se tocan) y deja un aviso en el historial.
 - **Recalcular / Limpiar historial** = arrancar de cero (regenera montos y fechas, vacía el historial y deja un separador `NUEVO PLAN`).
-- **Pagar / Comprar** = tilda pagadas + re-esparce las impagas desde el día del pago (nueva cadencia) + suma al historial con la cotización del momento.
+- **Pagar** = tilda pagadas + re-esparce las impagas desde el día del pago (nueva cadencia) + suma al historial con la cotización del momento + cierra el modal y vuelve al dashboard.
