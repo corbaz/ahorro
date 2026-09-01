@@ -425,7 +425,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260901.0812</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260901.0832</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -466,7 +466,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
         <div class="field"><label>Fecha de finalización</label><input class="input" id="inFechaFin" type="date"/></div>
       </div>
       <div class="cfg__row">
-        <div class="field"><label>Total Objetivo</label><div class="input__wrap"><span class="pre">u$s</span><input class="input" id="inObj" type="number" min="1" step="1000" value="100000" inputmode="numeric"/></div></div>
+        <div class="field"><label>Total Objetivo</label><div class="input__wrap"><span class="pre">u$s</span><input class="input" id="inObj" type="number" min="1" step="1000" value="" inputmode="numeric"/></div></div>
         <div class="field"><label>Frecuencia de pago</label>
           <select class="input" id="inFrecuencia">
             <option value="diaria">Diaria</option>
@@ -478,7 +478,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
         </div>
       </div>
       <div class="cfg__row">
-        <div class="field"><label>Nº de Cuotas</label><input class="input" id="inNum" type="number" min="1" max="1830" step="1" value="100" inputmode="numeric"/></div>
+        <div class="field"><label>Nº de Cuotas</label><input class="input" id="inNum" type="number" min="1" max="1830" step="1" value="" inputmode="numeric"/></div>
         <div class="field"><label>Tipo de plan</label>
           <select class="input" id="inTipo">
             <option value="progresivo">Progresivo (cuotas crecientes)</option>
@@ -487,7 +487,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
         </div>
       </div>
       <div class="cfg__row cfg__row--full">
-        <div class="field"><label>Cotización dólar (1 u$s = … $)</label><div class="input__wrap"><span class="pre">$</span><input class="input" id="inDolar" type="number" min="1" step="1" value="1" inputmode="numeric"/></div></div>
+        <div class="field"><label>Cotización dólar (1 u$s = … $)</label><div class="input__wrap"><span class="pre">$</span><input class="input" id="inDolar" type="number" min="1" step="1" value="" inputmode="numeric"/></div></div>
       </div>
       <p class="cfg__note"><b>Progresivo:</b> las cuotas crecen de a poco (<span class="code">k·n</span>, con <span class="code">k = objetivo / Σ(1..n)</span>). <b>Iguales:</b> todas valen lo mismo. Sin decimales (mínimo $1); la última absorbe el resto para sumar exacto.</p>
       <div class="cfg__actions">
@@ -709,7 +709,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260901.0812";
+const APP_VERSION = "v.260901.0832";
 
 const state = {
   objetivo: 100000,
@@ -967,7 +967,12 @@ function recalcular(){
   // validar los datos obligatorios (valores crudos)
   if (!isFinite(objRaw) || objRaw <= 0){ toast('Poné el Total Objetivo', true); inObj.focus(); return; }
   if (!isFinite(numRaw) || numRaw <= 0){ toast('Poné el Nº de Cuotas', true); inNum.focus(); return; }
+  if (!ini || !ini.value){ toast('Poné la Fecha de inicialización', true); ini && ini.focus(); return; }
   if (!fin || !fin.value){ toast('Poné la Fecha de finalización', true); fin && fin.focus(); return; }
+  if (new Date(fin.value + 'T12:00:00') < new Date(ini.value + 'T12:00:00')){
+    avisar('La Fecha de finalización no puede ser anterior a la de inicialización. Revisá las fechas e intentá de nuevo.');
+    fin.focus(); return;
+  }
   if (dolar <= 0){ toast('Poné la Cotización del dólar', true); inDolar.focus(); return; }
   const obj = Math.max(1, Math.round(objRaw));
   const num = Math.max(1, Math.min(1830, Math.round(numRaw)));
@@ -1408,8 +1413,9 @@ if (buildVer) buildVer.textContent = APP_VERSION;
 function cuotasPorFrecuencia(frec, iniVal, finVal){
   const ini = new Date(iniVal + 'T12:00:00');
   const fin = new Date(finVal + 'T12:00:00');
-  if (isNaN(ini) || isNaN(fin) || fin <= ini) return 0;
+  if (isNaN(ini) || isNaN(fin) || fin < ini) return 0;
   const dias = Math.round((fin - ini) / 86400000);
+  if (dias === 0) return 1;                              // inicio = fin: una sola cuota, ese dia
   if (frec === "diaria") return Math.max(1, dias + 1);   // ambos extremos inclusive
   if (frec === "semanal") return Math.max(1, Math.round(dias / 7));
   if (frec === "quincenal") return Math.max(1, Math.round(dias / 15));
@@ -1427,13 +1433,14 @@ function actualizarNumCuotas(){
     const fin = document.getElementById('inFechaFin');
     if (ini && fin && ini.value && fin.value){
       const n = cuotasPorFrecuencia(frec, ini.value, fin.value);
-      if (n > 0) el.value = n;
+      el.value = n > 0 ? n : "";   // fechas invalidas: se vacia, nunca queda el valor viejo
     }
     el.disabled = true;
   }
 }
 function syncInputs(){
-  inObj.value = state.objetivo; inNum.value = state.numDep; inDolar.value = state.dolar;
+  // 0 = "sin definir": el campo va vacio para que la validacion de Recalcular lo exija
+  inObj.value = state.objetivo || ""; inNum.value = state.numDep || ""; inDolar.value = state.dolar || "";
   const t = document.getElementById('inTipo');
   if (t) t.value = state.tipo || "progresivo";
   const f = document.getElementById('inFechaFin');
@@ -1561,7 +1568,7 @@ function bootLocal(){
     if (!acc){ toast('No se pudo crear el reto'); return; }
     // arrancar en cero: sin objetivo ni cuotas, sin plan generado,
     // solo con el marcador de inicio del reto en el historial
-    state.objetivo=0; state.numDep=0; state.dolar=1; state.tipo="progresivo"; state.frecuencia="cantidad";
+    state.objetivo=0; state.numDep=0; state.dolar=0; state.tipo="progresivo"; state.frecuencia="cantidad";
     state.fechaInicio=todayISO(); state.fechaFin=null;
     state.cuotas = [];              // todavía no hay plan configurado
     state.historial = [{ tipo:"plan", fecha: nowIso(), texto: "--- RETO: "+nombre+" ---" }];

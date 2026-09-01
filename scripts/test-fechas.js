@@ -123,5 +123,15 @@ console.log('\nD6 · la grilla incluye fines de semana');
   check('cuota 4 lunes', day(cuota(4).fecha), '2026-09-07');
 }
 
+/* ---- bordes de cuotasPorFrecuencia ---- */
+console.log('\nBordes · fechas limite');
+{
+  check('inicio = fin (una sola cuota ese dia)', cuotasPorFrecuencia('diaria', '2026-09-01', '2026-09-01'), 1);
+  check('inicio = fin en mensual', cuotasPorFrecuencia('mensual', '2026-09-01', '2026-09-01'), 1);
+  check('fin anterior al inicio (invalido)', cuotasPorFrecuencia('diaria', '2026-12-01', '2026-09-01'), 0);
+  check('fin anterior al inicio en mensual', cuotasPorFrecuencia('mensual', '2026-12-01', '2026-09-01'), 0);
+  check('un dia de diferencia', cuotasPorFrecuencia('diaria', '2026-09-01', '2026-09-02'), 2);
+}
+
 console.log('\n' + (fail === 0 ? 'TODO OK' : 'HAY FALLAS') + ' · ' + pass + ' ok · ' + fail + ' fallan\n');
 process.exit(fail === 0 ? 0 : 1);
