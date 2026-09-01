@@ -425,7 +425,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260830.1321</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260901.0812</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -709,7 +709,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260830.1321";
+const APP_VERSION = "v.260901.0812";
 
 const state = {
   objetivo: 100000,
@@ -765,7 +765,23 @@ function resetear(objetivo, numDep, tipo){
 
 /* ---- helpers de fechas de vencimiento ---- */
 // Asigna fecha de pago a cada cuota: cuota 1 = inicio, última = fin, cadencia en el medio
+// Grilla fija (frecuencia diaria): las cuotas impagas ocupan dias consecutivos a partir
+// de inicio + cantidad de pagadas. El fin queda intacto: la ultima cae en inicio + N - 1.
+function fechasGrillaFija(){
+  if (!state.fechaInicio) return false;
+  const ini = new Date(state.fechaInicio);
+  if (isNaN(ini)) return false;
+  const pagadas = state.cuotas.filter(c => c.paid).length;
+  const impagas = state.cuotas.filter(c => !c.paid).sort((a,b)=>a.n-b.n);
+  impagas.forEach((c,j) => {
+    const d = new Date(ini);
+    d.setDate(d.getDate() + pagadas + j);
+    c.fecha = d.toISOString();
+  });
+  return true;
+}
 function asignarFechasPlan(){
+  if (state.frecuencia === "diaria" && fechasGrillaFija()) return;
   if (!state.fechaInicio || !state.fechaFin || state.numDep < 1) { state.cuotas.forEach(c=>{ if(!c.fecha) c.fecha=null; }); return; }
   const ini = new Date(state.fechaInicio), fin = new Date(state.fechaFin);
   if (isNaN(ini) || isNaN(fin)) { state.cuotas.forEach(c=>{ c.fecha=null; }); return; }
@@ -777,6 +793,7 @@ function asignarFechasPlan(){
 }
 // Rearma las fechas de las cuotas impagas, distribuyéndolas desde hoy hasta la fecha final
 function rebalancearFechas(){
+  if (state.frecuencia === "diaria" && fechasGrillaFija()) return;
   if (!state.fechaFin) return;
   const fin = new Date(state.fechaFin);
   if (isNaN(fin)) return;
@@ -1393,7 +1410,7 @@ function cuotasPorFrecuencia(frec, iniVal, finVal){
   const fin = new Date(finVal + 'T12:00:00');
   if (isNaN(ini) || isNaN(fin) || fin <= ini) return 0;
   const dias = Math.round((fin - ini) / 86400000);
-  if (frec === "diaria") return Math.max(1, dias);
+  if (frec === "diaria") return Math.max(1, dias + 1);   // ambos extremos inclusive
   if (frec === "semanal") return Math.max(1, Math.round(dias / 7));
   if (frec === "quincenal") return Math.max(1, Math.round(dias / 15));
   if (frec === "mensual") return Math.max(1, Math.round(dias / 30));

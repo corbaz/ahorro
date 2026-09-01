@@ -18,7 +18,35 @@ Cada reto, para poder operar, **debe** tener estos 7 datos configurados (sí o s
 | **Fecha de finalización** | Día objetivo de cierre | Editable por el usuario · cuota N (última) = este día |
 | **Cotización del dólar (día de creación)** | Tipo de cambio u$s → ARS del día en que se crea el reto | Entero > 0 (sin decimales) · referencia inicial |
 
-**Frecuencia → Nº de cuotas:** con las fechas de inicio y fin, `Diaria` = días, `Semanal` = días/7, `Quincenal` = días/15, `Mensual` = días/30 (redondeado, mínimo 1). Si elegís `Cantidad de cuotas`, el campo se habilita y lo escribís vos. El resultado se recorta al tope de **1830 cuotas**.
+**Frecuencia → Nº de cuotas:** con las fechas de inicio y fin, `Diaria` = días + 1 (ambos extremos inclusive), `Semanal` = días/7, `Quincenal` = días/15, `Mensual` = días/30 (redondeado, mínimo 1). Si elegís `Cantidad de cuotas`, el campo se habilita y lo escribís vos. El resultado se recorta al tope de **1830 cuotas**.
+
+### Frecuencia `Diaria` — grilla fija
+
+La diaria no reparte las fechas de forma proporcional: usa una **grilla fija** de días consecutivos. Las cuotas **impagas**, ordenadas por número, ocupan días seguidos a partir del inicio, corridas por la cantidad de cuotas ya pagadas:
+
+```
+pendiente j = fecha de inicio + (cuotas pagadas) + (j − 1) días
+```
+
+| Regla | Qué significa |
+|---|---|
+| **D1** | Las pendientes ocupan días consecutivos, **sin huecos**. |
+| **D2** | Se recalcula en **cada pago**. |
+| **D3** | El fin es **intocable** (`inicio + N − 1`): adelantarte no acorta el reto ni atrasarte lo estira. |
+| **D4** | Si te atrasás, las pendientes conservan su fecha pasada y quedan **vencidas**. |
+| **D5** | Inicio y fin editables; `N = días + 1`. El campo Nº de Cuotas queda en solo lectura. |
+| **D6** | Entran **todos los días** del calendario: sábados, domingos y feriados incluidos. |
+| **D7** | Se puede pagar **cualquier** cuota, en cualquier orden y varias el mismo día. Las pendientes se recorren ocupando los días que quedan libres. |
+
+**Ejemplo** (inicio 03/09, 100 cuotas diarias, fin 11/12): pagás las cuotas 1, 2 y 3 el 01/09, antes de que arranque el reto. La cuota 4 vence el **06/09** (`inicio + 3`), la 5 el 07/09, y la cuota 100 sigue venciendo el **11/12** — el fin no se movió.
+
+Las reglas están cubiertas por `scripts/test-fechas.js` (node puro, sin dependencias):
+
+```bash
+node scripts/test-fechas.js
+```
+
+> Las frecuencias `Semanal`, `Quincenal` y `Mensual` **todavía usan el reparto proporcional** `(fin − inicio) / (N − 1)`, por lo que sus vencimientos derivan del calendario (una mensual cae 01/01, 03/02, 08/03…). Sus reglas están pendientes de definición.
 
 La cotización **no queda congelada**: al pagar, si el dólar cambió, se usa la cotización **del momento de pagar** (ver [Cotización del dólar](#cotización-del-dólar)).
 
