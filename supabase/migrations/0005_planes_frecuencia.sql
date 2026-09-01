@@ -1,0 +1,11 @@
+-- ============================================================
+-- Reto de Ahorro — frecuencia de pago
+-- ============================================================
+-- Ritmo de las cuotas de cada cuenta (plan):
+--   'diaria'    -> una cuota por dia calendario (grilla fija)
+--   'semanal'   -> N = dias / 7
+--   'quincenal' -> N = dias / 15
+--   'mensual'   -> N = dias / 30
+--   'cantidad'  -> el usuario escribe el N a mano
+-- Default: 'cantidad' para no romper cuentas existentes.
+alter table public.planes add column if not exists frecuencia text not null default 'cantidad';

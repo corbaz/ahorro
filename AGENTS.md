@@ -86,7 +86,7 @@ Al cambiar el schema del estado, subí la versión de la clave (`/v3`) para no m
 
 ## Supabase (login + sync nube)
 
-- **Migración SQL**: `supabase/migrations/0001_init.sql` (tablas `planes`, `cuotas`, `historial` + RLS `auth.uid() = user_id`) y `0002_multi_accounts.sql` (varios retos por mail: PK `id` en `planes`, columna `nombre`, `plan_id` en `cuotas`/`historial`, unique `(user_id, nombre)` y `(plan_id, n)`)
+- **Migración SQL**: `supabase/migrations/0001_init.sql` (tablas `planes`, `cuotas`, `historial` + RLS `auth.uid() = user_id`) y `0002_multi_accounts.sql` (varios retos por mail: PK `id` en `planes`, columna `nombre`, `plan_id` en `cuotas`/`historial`, unique `(user_id, nombre)` y `(plan_id, n)`). `0004_planes_tipo.sql` agrega `planes.tipo` (progresivo/iguales) y `0005_planes_frecuencia.sql` agrega `planes.frecuencia` (diaria/semanal/quincenal/mensual/cantidad). Ambas columnas se suben con un `update` aparte en `supabase-sync.js`, para que la app siga funcionando si la migración todavía no se corrió
 - **SDK JS**: `supabase-sync.js` — carga `@supabase/supabase-js` UMD por CDN, login Google, listar/crear/abrir retos por plan
 - **Modelo de reto**: el login es la **puerta de entrada**; un mismo mail (auth.uid) puede tener **varios retos** distinguidos por el `nombre` que elige el usuario (p. ej. "Casa" y "Auto"). `state.planId` y `state.nombre` identifican el reto activo.
 - **Config local**: `supabase/config.json` (NO se versiona, está en .gitignore) — `{projectUrl, anonKey}`

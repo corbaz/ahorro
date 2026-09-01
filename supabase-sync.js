@@ -127,6 +127,7 @@
     return {
       id: plan.id, nombre: plan.nombre,
       objetivo: plan.objetivo, numDep: plan.num_dep, dolar: plan.dolar, tipo: plan.tipo || 'progresivo',
+      frecuencia: plan.frecuencia || 'cantidad',
       fechaInicio: plan.fecha_inicio, fechaFin: plan.fecha_fin,
       cuotas: (cuotas || []).map(c => ({ n: c.n, monto: Number(c.monto), paid: c.paid })),
       historial: (hist || []).map(h => ({
@@ -151,6 +152,9 @@
     // tipo se actualiza aparte (columna de la migración 0004; si aún no existe, no rompe el resto)
     const { error: eTipo } = await sb.from('planes').update({ tipo: state.tipo }).eq('id', pid);
     if (eTipo) console.warn('update planes.tipo:', eTipo.message);
+    // frecuencia idem (migración 0005): define el ritmo de los vencimientos
+    const { error: eFrec } = await sb.from('planes').update({ frecuencia: state.frecuencia }).eq('id', pid);
+    if (eFrec) console.warn('update planes.frecuencia:', eFrec.message);
     // reemplazar cuotas del plan
     await sb.from('cuotas').delete().eq('plan_id', pid);
     const filas = state.cuotas.map(c => ({ user_id: uid, plan_id: pid, n: c.n, monto: c.monto, paid: c.paid }));
