@@ -37,6 +37,7 @@ pendiente j = fecha de inicio + (cuotas pagadas) + (j − 1) días
 | **D5** | Inicio y fin editables; `N = días + 1`. El campo Nº de Cuotas queda en solo lectura. |
 | **D6** | Entran **todos los días** del calendario: sábados, domingos y feriados incluidos. |
 | **D7** | Se puede pagar **cualquier** cuota, en cualquier orden y varias el mismo día. Las pendientes se recorren ocupando los días que quedan libres. |
+| **D8** | Los **montos** se fijan al generar el plan. Adelantar o atrasar pagos mueve **solo las fechas**; el único lugar que reasigna montos es el cambio de tipo de plan (progresivo ↔ iguales). |
 
 **Ejemplo** (inicio 03/09, 100 cuotas diarias, fin 11/12): pagás las cuotas 1, 2 y 3 el 01/09, antes de que arranque el reto. La cuota 4 vence el **06/09** (`inicio + 3`), la 5 el 07/09, y la cuota 100 sigue venciendo el **11/12** — el fin no se movió.
 

@@ -123,6 +123,18 @@ console.log('\nD6 · la grilla incluye fines de semana');
   check('cuota 4 lunes', day(cuota(4).fecha), '2026-09-07');
 }
 
+/* ---- D8: los montos se fijan al generar el plan; pagar solo mueve fechas ---- */
+console.log('\nD8 · adelantar cuotas NO recalcula montos');
+{
+  nuevoPlan('2026-09-01', '2026-12-09');
+  state.cuotas.forEach(c => { c.monto = c.n; });          // progresivo: cuota n vale n
+  const antes = state.cuotas.map(c => c.monto).join(',');
+  pagar([1, 2, 4]);                                        // pago fuera de orden y adelantado
+  check('montos intactos tras pagar', state.cuotas.map(c => c.monto).join(','), antes);
+  check('cuota 3 solo cambio de fecha', day(cuota(3).fecha), '2026-09-04');
+  check('monto de la cuota 3', cuota(3).monto, 3);
+}
+
 /* ---- bordes de cuotasPorFrecuencia ---- */
 console.log('\nBordes · fechas limite');
 {
