@@ -51,17 +51,26 @@ node scripts/test-fechas.js
 
 La cotización **no queda congelada**: al pagar, si el dólar cambió, se usa la cotización **del momento de pagar** (ver [Cotización del dólar](#cotización-del-dólar)).
 
-**Validaciones de Recalcular:** ningún dato obligatorio puede faltar. Los campos Total Objetivo, Nº de Cuotas y Cotización **arrancan vacíos** (un campo precargado pasaría la validación sin que el usuario haya decidido nada). Se chequea, en orden:
+**Validaciones de Recalcular:** ningún dato obligatorio puede faltar. Los campos Total Objetivo, Nº de Cuotas y Cotización **arrancan vacíos** (un campo precargado pasaría la validación sin que el usuario haya decidido nada). Se chequea en dos pasos:
 
-| # | Validación | Si falla |
-|---|---|---|
-| 1 | Total Objetivo > 0 | Aviso y foco en el campo |
-| 2 | Nº de Cuotas > 0 | Aviso y foco en el campo |
-| 3 | Fecha de inicialización presente | Aviso y foco en el campo |
-| 4 | Fecha de finalización presente | Aviso y foco en el campo |
-| 5 | Fin **no anterior** al inicio | Modal de aviso |
-| 6 | Cotización del dólar > 0 | Aviso y foco en el campo |
-| 7 | Objetivo **mayor** que el Nº de cuotas | Modal de aviso |
+**1 · Datos obligatorios** — se juntan **todos** los que falten y se muestran en **un solo modal**, no de a uno. El foco va al primero de la lista:
+
+```
+Faltan completar 3 datos para generar el plan:
+
+   ·  Fecha de finalización
+   ·  Total Objetivo
+   ·  Cotización del dólar
+```
+
+Son: Fecha de inicialización, Fecha de finalización, Total Objetivo, Nº de Cuotas y Cotización del dólar.
+
+**2 · Coherencia** — solo si no falta ningún dato, y con modal individual porque cada una necesita explicar el porqué:
+
+| Validación | Mensaje |
+|---|---|
+| Fin **no anterior** al inicio | "La Fecha de finalización no puede ser anterior a la de inicialización" |
+| Objetivo **mayor** que el Nº de cuotas | "El Total Objetivo debe ser mayor que el Nº de cuotas (N)" |
 
 Si la frecuencia no puede calcular las cuotas (fechas inválidas), el campo Nº de Cuotas se **vacía**: nunca queda el valor de un cálculo anterior. `inicio = fin` da **1 cuota** (ese día); un fin anterior al inicio da 0 y no deja continuar.
 

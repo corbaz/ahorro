@@ -312,6 +312,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
 .modal__head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}
 .modal__title{font-size:1.15rem;font-weight:700;letter-spacing:-0.02em}
 .modal__sub{font-size:.74rem;color:var(--txt-3);margin-top:.2rem;font-weight:500}
+#avisoText{white-space:pre-line;line-height:1.55}
 .modal__body{display:flex;flex-direction:column;gap:1rem;overflow:auto;min-height:0}
 .modal__totals{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
 .mtot{border-radius:1rem;padding:.85rem .95rem;background:var(--inset-bg);border:1px solid var(--hairline);display:flex;flex-direction:column;gap:.3rem}
@@ -425,7 +426,7 @@ table.ledger__t{width:100%;border-collapse:collapse;font-family:var(--f-mono);fo
     </div>
     <div class="nav__actions">
       <span class="nav__count" title="Cuotas pendientes"><span class="dot"></span> <b id="navPend">0</b> pendientes</span>
-      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260901.0839</span>
+      <span class="nav__ver" id="navVer" title="Versión de build · hora de Buenos Aires (GMT-3)">v.260901.0845</span>
       <span class="nav__user" id="navUser" style="display:none"></span>
       <button class="btn btn--ghost" id="btnLogin" style="padding:.4rem .85rem;font-size:.78rem">Ingresar</button>
       <button class="btn btn--icon btn--ghost" id="btnTheme" title="Cambiar tema claro/oscuro">
@@ -709,7 +710,7 @@ const STORE_KEY = "reto-ahorro-dashboard/v2";
 const seedFecha = "2026-08-23T12:21:24.000Z"; // primer pago de ejemplo (cuota 25)
 /* APP_VERSION se estampa en cada push con la hora de Buenos Aires (GMT-3)
    vía scripts/bump-version.sh (hook pre-commit). Formato: v.YYMMDD.HHMM  */
-const APP_VERSION = "v.260901.0839";
+const APP_VERSION = "v.260901.0845";
 
 const state = {
   objetivo: 100000,
@@ -964,16 +965,26 @@ function recalcular(){
   const ini = document.getElementById('inFechaInicio');
   const tipoEl = document.getElementById('inTipo');
   const dolar = Math.round(Number(inDolar.value) || 0);
-  // validar los datos obligatorios (valores crudos)
-  if (!isFinite(objRaw) || objRaw <= 0){ toast('Poné el Total Objetivo', true); inObj.focus(); return; }
-  if (!isFinite(numRaw) || numRaw <= 0){ toast('Poné el Nº de Cuotas', true); inNum.focus(); return; }
-  if (!ini || !ini.value){ toast('Poné la Fecha de inicialización', true); ini && ini.focus(); return; }
-  if (!fin || !fin.value){ toast('Poné la Fecha de finalización', true); fin && fin.focus(); return; }
+  // 1) datos obligatorios: se juntan TODOS los que faltan y se avisan de una sola vez
+  const faltan = [];
+  if (!ini || !ini.value)                    faltan.push(['Fecha de inicialización', ini]);
+  if (!fin || !fin.value)                    faltan.push(['Fecha de finalización', fin]);
+  if (!isFinite(objRaw) || objRaw <= 0)      faltan.push(['Total Objetivo', inObj]);
+  if (!isFinite(numRaw) || numRaw <= 0)      faltan.push(['Nº de Cuotas', inNum]);
+  if (dolar <= 0)                            faltan.push(['Cotización del dólar', inDolar]);
+  if (faltan.length){
+    const lista = faltan.map(f => '   ·  ' + f[0]).join('\n');
+    avisar((faltan.length === 1 ? 'Falta completar un dato' : 'Faltan completar ' + faltan.length + ' datos') +
+           ' para generar el plan:\n\n' + lista);
+    const primero = faltan[0][1];
+    if (primero) primero.focus();
+    return;
+  }
+  // 2) coherencia entre los datos ya cargados
   if (new Date(fin.value + 'T12:00:00') < new Date(ini.value + 'T12:00:00')){
     avisar('La Fecha de finalización no puede ser anterior a la de inicialización. Revisá las fechas e intentá de nuevo.');
     fin.focus(); return;
   }
-  if (dolar <= 0){ toast('Poné la Cotización del dólar', true); inDolar.focus(); return; }
   const obj = Math.max(1, Math.round(objRaw));
   const num = Math.max(1, Math.min(1830, Math.round(numRaw)));
   // validación: objetivo siempre mayor que el nº de cuotas
